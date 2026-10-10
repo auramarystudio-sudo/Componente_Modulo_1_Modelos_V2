@@ -1,49 +1,150 @@
-// Componente ModelCard - Tarjeta individual de modelo SD
-// Muestra información resumida del modelo con badge de tipo y acciones
+// Componente ModelCard - Tarjeta de modelo con diseño diferenciado por categoría
+// SD = azul, LLM = verde, Video = púrpura
 
 import React from 'react';
-import type { ModeloSD } from '../lib/demoData';
+import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo } from '../lib/demoData';
 
 interface ModelCardProps {
-  modelo: ModeloSD;
-  onEdit: (modelo: ModeloSD) => void;
-  onDelete: (id: string) => void;
+  modelo: Modelo;
+  onViewDetail: (modelo: Modelo) => void;
+  onEdit: (modelo: Modelo) => void;
+  onDelete: (id: string, categoria: string) => void;
 }
 
-// Colores de badge según tipo de modelo
-const tipoConfig: Record<string, { color: string; bg: string; label: string }> = {
-  checkpoint: { color: 'text-blue-300', bg: 'bg-blue-500/20 border-blue-500/40', label: 'Checkpoint' },
-  lora: { color: 'text-green-300', bg: 'bg-green-500/20 border-green-500/40', label: 'LoRA' },
-  vae: { color: 'text-orange-300', bg: 'bg-orange-500/20 border-orange-500/40', label: 'VAE' },
+// Configuración visual por categoría
+const categoriaConfig = {
+  sd: {
+    bg: 'from-slate-800 to-slate-900',
+    border: 'border-slate-700 hover:border-blue-500/50',
+    icon: '🧠',
+    label: 'SD',
+  },
+  llm: {
+    bg: 'from-green-950/40 to-slate-900',
+    border: 'border-green-900/50 hover:border-green-500/50',
+    icon: '💬',
+    label: 'LLM',
+  },
+  video: {
+    bg: 'from-purple-950/40 to-slate-900',
+    border: 'border-purple-900/50 hover:border-purple-500/50',
+    icon: '🎬',
+    label: 'Video',
+  },
 };
 
-// Iconos según tipo
-const tipoIcons: Record<string, string> = {
-  checkpoint: '🧠',
-  lora: '🎨',
-  vae: '⚙️',
+// Colores de badge por subtipo
+const tipoBadgeColors: Record<string, string> = {
+  // SD
+  checkpoint: 'bg-blue-500/20 border-blue-500/40 text-blue-300',
+  lora: 'bg-green-500/20 border-green-500/40 text-green-300',
+  vae: 'bg-orange-500/20 border-orange-500/40 text-orange-300',
+  upscaler: 'bg-pink-500/20 border-pink-500/40 text-pink-300',
+  controlnet: 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300',
+  embedding: 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300',
+  // LLM
+  chat: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300',
+  completion: 'bg-teal-500/20 border-teal-500/40 text-teal-300',
+  code: 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300',
+  vision: 'bg-violet-500/20 border-violet-500/40 text-violet-300',
+  // Video
+  text_to_video: 'bg-purple-500/20 border-purple-500/40 text-purple-300',
+  image_to_video: 'bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300',
+  video_to_video: 'bg-rose-500/20 border-rose-500/40 text-rose-300',
+  animation: 'bg-amber-500/20 border-amber-500/40 text-amber-300',
 };
 
-export default function ModelCard({ modelo, onEdit, onDelete }: ModelCardProps) {
-  const config = tipoConfig[modelo.tipo] || tipoConfig.checkpoint;
-  const icon = tipoIcons[modelo.tipo] || '📦';
+// Renderiza contenido específico según el tipo de modelo
+function renderModelInfo(modelo: Modelo) {
+  if (modelo.categoria === 'sd') {
+    const m = modelo as ModeloSD;
+    return (
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {m.sampler && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-700/60 rounded text-xs text-slate-300">
+            ◈ {m.sampler}
+          </span>
+        )}
+        {m.steps > 0 && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-700/60 rounded text-xs text-slate-300">
+            ◈ {m.steps} steps
+          </span>
+        )}
+        {m.cfg_scale > 0 && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-700/60 rounded text-xs text-slate-300">
+            ◈ CFG {m.cfg_scale}
+          </span>
+        )}
+      </div>
+    );
+  }
+  if (modelo.categoria === 'llm') {
+    const m = modelo as ModeloLLM;
+    return (
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {m.tamaño_parametros && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/30 border border-green-800/30 rounded text-xs text-green-300">
+            {m.tamaño_parametros}
+          </span>
+        )}
+        {m.cuantizacion && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/30 border border-green-800/30 rounded text-xs text-green-300">
+            {m.cuantizacion}
+          </span>
+        )}
+        {m.framework && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-700/60 rounded text-xs text-slate-300">
+            {m.framework}
+          </span>
+        )}
+      </div>
+    );
+  }
+  if (modelo.categoria === 'video') {
+    const m = modelo as ModeloVideo;
+    return (
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {m.fps_recomendado > 0 && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-900/30 border border-purple-800/30 rounded text-xs text-purple-300">
+            {m.fps_recomendado} FPS
+          </span>
+        )}
+        {m.frames_totales > 0 && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-900/30 border border-purple-800/30 rounded text-xs text-purple-300">
+            {m.frames_totales} frames
+          </span>
+        )}
+        {m.resolucion && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-700/60 rounded text-xs text-slate-300">
+            {m.resolucion}
+          </span>
+        )}
+      </div>
+    );
+  }
+  return null;
+}
 
-  // Manejar eliminación con confirmación
+export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete }: ModelCardProps) {
+  const config = categoriaConfig[modelo.categoria];
+  const badgeColor = tipoBadgeColors[modelo.tipo] || 'bg-slate-500/20 border-slate-500/40 text-slate-300';
+
+  // Descripción corta
+  const descripcion = modelo.notas
+    ? modelo.notas.substring(0, 80) + (modelo.notas.length > 80 ? '...' : '')
+    : '';
+
+  // Manejar eliminación
   const handleDelete = () => {
-    if (window.confirm(`¿Eliminar el modelo "${modelo.nombre}"? Esta acción no se puede deshacer.`)) {
-      onDelete(modelo.id);
+    if (window.confirm(`¿Eliminar "${modelo.nombre}"? Esta acción no se puede deshacer.`)) {
+      onDelete(modelo.id, modelo.categoria);
     }
   };
 
-  // Formatear tags para mostrar
-  const tagsArray: string[] = modelo.tags
-    ? modelo.tags.split(',').map((t: string) => t.trim()).filter(Boolean).slice(0, 3)
-    : [];
-
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden hover:border-slate-500 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/5 group">
-      {/* Cabecera con imagen o gradiente */}
-      <div className="h-36 bg-gradient-to-br from-slate-700 to-slate-800 relative overflow-hidden flex items-center justify-center">
+    <div className={`bg-gradient-to-br ${config.bg} border ${config.border} rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg group flex flex-col`}>
+      {/* Imagen / Placeholder */}
+      <div className="h-32 relative overflow-hidden flex items-center justify-center bg-slate-800/50">
         {modelo.imagen_principal ? (
           <img
             src={modelo.imagen_principal}
@@ -54,83 +155,70 @@ export default function ModelCard({ modelo, onEdit, onDelete }: ModelCardProps) 
             }}
           />
         ) : (
-          <div className="text-5xl opacity-40 group-hover:opacity-60 transition-opacity">
-            {icon}
-          </div>
+          <span className="text-4xl opacity-30 group-hover:opacity-50 transition-opacity">
+            {config.icon}
+          </span>
         )}
-        {/* Badge de tipo */}
-        <span className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-semibold border ${config.bg} ${config.color}`}>
+        {/* Badge de categoría */}
+        <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/50 backdrop-blur-sm rounded text-xs text-white/80 font-medium">
           {config.label}
+        </span>
+        {/* Badge de tipo */}
+        <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-medium border ${badgeColor}`}>
+          {modelo.tipo}
         </span>
       </div>
 
-      {/* Contenido de la tarjeta */}
-      <div className="p-4 space-y-3">
-        {/* Nombre del modelo */}
-        <h3 className="text-lg font-bold text-white truncate" title={modelo.nombre}>
+      {/* Contenido */}
+      <div className="p-4 flex-1 flex flex-col">
+        {/* Nombre */}
+        <h3 className="text-sm font-bold text-white truncate" title={modelo.nombre}>
           {modelo.nombre}
         </h3>
 
-        {/* Modelo base */}
-        <p className="text-sm text-slate-400">
-          <span className="text-slate-500">Base:</span> {modelo.modelo_base}
-        </p>
+        {/* Descripción */}
+        {descripcion && (
+          <p className="text-xs text-slate-400 mt-1 line-clamp-2">{descripcion}</p>
+        )}
 
-        {/* Resumen de parámetros */}
-        <div className="flex flex-wrap gap-2">
-          {modelo.sampler && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-700/50 rounded text-xs text-slate-300">
-              <span className="text-cyan-400">◈</span> {modelo.sampler}
-            </span>
+        {/* Info específica del tipo */}
+        {renderModelInfo(modelo)}
+
+        {/* Modelo base / framework */}
+        <div className="mt-2 text-xs text-slate-500">
+          {modelo.categoria === 'sd' && (modelo as ModeloSD).modelo_base && (
+            <span>Base: {(modelo as ModeloSD).modelo_base}</span>
           )}
-          {modelo.steps > 0 && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-700/50 rounded text-xs text-slate-300">
-              <span className="text-purple-400">◈</span> {modelo.steps} steps
-            </span>
+          {modelo.categoria === 'llm' && (modelo as ModeloLLM).creador && (
+            <span>Por: {(modelo as ModeloLLM).creador}</span>
           )}
-          {modelo.cfg_scale > 0 && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-700/50 rounded text-xs text-slate-300">
-              <span className="text-amber-400">◈</span> CFG {modelo.cfg_scale}
-            </span>
+          {modelo.categoria === 'video' && (modelo as ModeloVideo).framework && (
+            <span>Framework: {(modelo as ModeloVideo).framework}</span>
           )}
         </div>
 
-        {/* Tags */}
-        {tagsArray.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {tagsArray.map((tag: string, i: number) => (
-              <span key={i} className="px-1.5 py-0.5 bg-cyan-900/30 border border-cyan-800/30 rounded text-xs text-cyan-300">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Enlace Civitai */}
-        {modelo.url_civitai && (
-          <a
-            href={modelo.url_civitai}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
-          >
-            🔗 Civitai
-          </a>
-        )}
+        {/* Spacer */}
+        <div className="flex-1" />
 
         {/* Botones de acción */}
-        <div className="flex gap-2 pt-2 border-t border-slate-700/50">
+        <div className="flex gap-1.5 mt-3 pt-3 border-t border-slate-700/50">
+          <button
+            onClick={() => onViewDetail(modelo)}
+            className="flex-1 px-2 py-1.5 bg-cyan-600/20 hover:bg-cyan-600/40 border border-cyan-700/30 text-cyan-300 text-xs font-medium rounded-lg transition-colors"
+          >
+            👁️ Ver
+          </button>
           <button
             onClick={() => onEdit(modelo)}
-            className="flex-1 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-medium rounded-lg transition-colors"
+            className="flex-1 px-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium rounded-lg transition-colors"
           >
             ✏️ Editar
           </button>
           <button
             onClick={handleDelete}
-            className="flex-1 px-3 py-2 bg-red-900/30 hover:bg-red-900/50 border border-red-800/30 text-red-300 text-sm font-medium rounded-lg transition-colors"
+            className="px-2 py-1.5 bg-red-900/20 hover:bg-red-900/40 border border-red-800/30 text-red-400 text-xs font-medium rounded-lg transition-colors"
           >
-            🗑️ Eliminar
+            🗑️
           </button>
         </div>
       </div>

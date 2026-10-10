@@ -1,9 +1,9 @@
 // App.tsx - Punto de entrada de la aplicación
-// Renderiza el módulo de Modelos SD & Checkpoints
+// Renderiza el módulo unificado de Modelos (SD, LLM, Video)
 
 import React from 'react';
-import ModelosSDManager from './components/ModelosSDManager';
+import ModelosManager from './components/ModelosManager';
 
 export default function App() {
-  return <ModelosSDManager />;
+  return <ModelosManager />;
 }

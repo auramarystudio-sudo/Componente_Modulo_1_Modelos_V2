@@ -1,24 +1,18 @@
-// Cliente de PocketBase - Conexión real a la base de datos
-// Configura la URL de tu instancia de PocketBase aquí
+// Cliente PocketBase - Soporte para 3 colecciones: modelos_sd, modelos_llm, modelos_video
 import PocketBase from 'pocketbase';
 
-// URL del servidor PocketBase (cambiar según tu configuración)
 const POCKETBASE_URL = import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090';
-
-// Instancia global del cliente PocketBase
 const pbClient = new PocketBase(POCKETBASE_URL);
 
-// Flag para modo demo cuando no hay servidor disponible
 let demoMode = false;
 
-// Función para verificar conexión con PocketBase
 export async function checkConnection(): Promise<boolean> {
   try {
     await pbClient.health.check();
     demoMode = false;
     return true;
   } catch {
-    console.warn('⚠️ PocketBase no disponible. Activando modo demo con datos locales.');
+    console.warn('⚠️ PocketBase no disponible. Activando modo demo.');
     demoMode = true;
     return false;
   }
@@ -27,5 +21,12 @@ export async function checkConnection(): Promise<boolean> {
 export function isDemoMode(): boolean {
   return demoMode;
 }
+
+// Helpers para cada colección
+export const collections = {
+  sd: pbClient.collection('modelos_sd'),
+  llm: pbClient.collection('modelos_llm'),
+  video: pbClient.collection('modelos_video'),
+};
 
 export default pbClient;
