@@ -3,6 +3,7 @@
 
 import React, { useEffect } from 'react';
 import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo } from '../lib/demoData';
+import ImageGallery from './ImageGallery';
 
 interface ModelDetailProps {
   modelo: Modelo;
@@ -281,32 +282,12 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete }: Model
 
           {/* Galería */}
           {modelo.categoria === 'sd' && (modelo as ModeloSD).galeria_urls && (
-            <div>
-              <h4 className="text-sm font-semibold text-cyan-400 uppercase tracking-wide mb-2">
-                🖼️ Galería de Imágenes
-                <span className="ml-2 text-xs text-slate-400 font-normal">
-                  ({(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).length} imágenes)
-                </span>
-              </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).map((url: string, i: number) => (
-                  <div key={i} className="group relative">
-                    <img
-                      src={url.trim()}
-                      alt={`Galería ${i + 1}`}
-                      className="w-full h-32 object-cover rounded-lg border border-slate-700 hover:border-cyan-500/50 transition-colors cursor-pointer"
-                      onError={(e) => { 
-                        (e.target as HTMLImageElement).parentElement!.style.display = 'none';
-                      }}
-                      onClick={() => window.open(url.trim(), '_blank')}
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <span className="text-white text-2xl">🔍</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ImageGallery
+              images={(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean)}
+              title="Galería de Imágenes"
+              columns={4}
+              thumbnailHeight="h-40"
+            />
           )}
 
           {/* Notas */}

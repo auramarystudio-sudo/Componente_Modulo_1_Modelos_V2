@@ -375,14 +375,15 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                         🖼️ Galería importada: {((formData as any).galeria_urls as string).split('\n').filter(Boolean).length} imágenes
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {((formData as any).galeria_urls as string).split('\n').filter(Boolean).slice(0, 6).map((url: string, i: number) => (
-                          <img
-                            key={i}
-                            src={url.trim()}
-                            alt={`Preview ${i + 1}`}
-                            className="w-16 h-16 object-cover rounded border border-slate-600"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                          />
+                        {((formData as any).galeria_urls as string).split('\n').filter(Boolean).slice(0, 8).map((url: string, i: number) => (
+                          <div key={i} className="w-20 h-20 bg-slate-900 rounded border border-slate-600 overflow-hidden flex items-center justify-center">
+                            <img
+                              src={url.trim()}
+                              alt={`Preview ${i + 1}`}
+                              className="max-w-full max-h-full object-contain"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -600,14 +601,15 @@ function renderSDFields(
         />
         {data.galeria_urls && (
           <div className="mt-2 flex flex-wrap gap-2">
-            {data.galeria_urls.split('\n').filter(Boolean).slice(0, 6).map((url: string, i: number) => (
-              <img
-                key={i}
-                src={url.trim()}
-                alt={`Preview ${i + 1}`}
-                className="w-16 h-16 object-cover rounded border border-slate-600"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
+            {data.galeria_urls.split('\n').filter(Boolean).slice(0, 8).map((url: string, i: number) => (
+              <div key={i} className="w-20 h-20 bg-slate-900 rounded border border-slate-600 overflow-hidden flex items-center justify-center">
+                <img
+                  src={url.trim()}
+                  alt={`Preview ${i + 1}`}
+                  className="max-w-full max-h-full object-contain"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              </div>
             ))}
           </div>
         )}
