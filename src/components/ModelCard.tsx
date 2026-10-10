@@ -162,6 +162,7 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete }: Mo
             src={modelo.imagen_principal}
             alt={modelo.nombre}
             className="w-full h-full object-cover"
+            style={{ objectPosition: modelo.categoria === 'sd' ? (modelo as ModeloSD).posicion_imagen || 'center' : 'center' }}
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}

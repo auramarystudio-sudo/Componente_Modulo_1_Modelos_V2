@@ -11,6 +11,7 @@ interface ModelDetailProps {
   onEdit: (modelo: Modelo) => void;
   onDelete: (id: string, categoria: string) => void;
   onSetMainImage?: (id: string, categoria: string, imageUrl: string) => void;
+  onSetImagePosition?: (id: string, categoria: string, position: string) => void;
 }
 
 // Función para copiar texto al portapapeles
@@ -28,7 +29,7 @@ function copiarAlPortapapeles(texto: string) {
   });
 }
 
-export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetMainImage }: ModelDetailProps) {
+export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetMainImage, onSetImagePosition }: ModelDetailProps) {
   // Cerrar con Escape
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -119,13 +120,14 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetMa
 
       {/* Modal */}
       <div className="relative w-full max-w-4xl bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl my-8 overflow-hidden">
-        {/* Header con imagen */}
+          {/* Header con imagen */}
         <div className="relative h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
           {modelo.imagen_principal ? (
             <img
               src={modelo.imagen_principal}
               alt={modelo.nombre}
               className="w-full h-full object-cover opacity-60"
+              style={{ objectPosition: modelo.categoria === 'sd' ? (modelo as ModeloSD).posicion_imagen || 'center' : 'center' }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           ) : (
@@ -133,8 +135,7 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetMa
               {modelo.categoria === 'sd' ? '🧠' : modelo.categoria === 'llm' ? '💬' : '🎬'}
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-800 via-slate-800/50 to-transparent" />
-          
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-800 via-slate-800/50 to-transparent" />          
           {/* Botón cerrar */}
           <button
             onClick={onClose}
@@ -165,6 +166,40 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetMa
             <h2 className="text-2xl font-bold text-white">{modelo.nombre}</h2>
           </div>
         </div>
+
+        {/* Control de posición de imagen (solo para SD) */}
+        {modelo.categoria === 'sd' && modelo.imagen_principal && onSetImagePosition && (
+          <div className="px-6 py-3 bg-slate-800/50 border-b border-slate-700">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-slate-400">📐 Posición:</span>
+              <div className="flex gap-1.5 flex-wrap">
+                {[
+                  { value: 'top', label: '↑ Arriba' },
+                  { value: 'center', label: '● Centro' },
+                  { value: 'bottom', label: '↓ Abajo' },
+                  { value: 'left', label: '← Izquierda' },
+                  { value: 'right', label: '→ Derecha' },
+                  { value: 'top left', label: '↖ Sup. Izq.' },
+                  { value: 'top right', label: '↗ Sup. Der.' },
+                  { value: 'bottom left', label: '↘ Inf. Izq.' },
+                  { value: 'bottom right', label: '↙ Inf. Der.' },
+                ].map((pos) => (
+                  <button
+                    key={pos.value}
+                    onClick={() => onSetImagePosition(modelo.id, modelo.categoria, pos.value)}
+                    className={`px-2 py-1 text-xs rounded transition-colors ${
+                      (modelo as ModeloSD).posicion_imagen === pos.value
+                        ? 'bg-cyan-600 text-white'
+                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    }`}
+                  >
+                    {pos.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Contenido */}
         <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">

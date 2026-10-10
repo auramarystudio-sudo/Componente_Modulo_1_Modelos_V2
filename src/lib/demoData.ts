@@ -20,6 +20,7 @@ export interface ModeloSD {
   prompt_referencia: string;
   prompt_negativo_default: string;
   imagen_principal: string;
+  posicion_imagen: string; // 'top', 'center', 'bottom', 'left', 'right', etc.
   vram_min: string;
   vram_rec: string;
   notas: string;
@@ -103,6 +104,7 @@ const demoSD: ModeloSD[] = [
     prompt_referencia: 'masterpiece, best quality, photorealistic, 8k uhd, high resolution, detailed skin',
     prompt_negativo_default: 'bad anatomy, bad hands, blurry, low quality, watermark, text, deformed',
     imagen_principal: '',
+    posicion_imagen: 'center',
     vram_min: '4GB',
     vram_rec: '8GB',
     notas: 'Excelente para fotografía realista. Funciona mejor con resolución 512x512 o 512x768.',
@@ -129,6 +131,7 @@ const demoSD: ModeloSD[] = [
     prompt_referencia: 'cinematic lighting, dramatic shadows, 8k, ultra detailed, masterpiece, professional photography',
     prompt_negativo_default: 'cartoon, anime, painting, blurry, low quality, watermark, text, ugly',
     imagen_principal: '',
+    posicion_imagen: 'center',
     vram_min: '8GB',
     vram_rec: '12GB',
     notas: 'Modelo SDXL premium. Requiere más VRAM pero produce resultados cinematográficos excepcionales.',
@@ -155,6 +158,7 @@ const demoSD: ModeloSD[] = [
     prompt_referencia: '',
     prompt_negativo_default: '',
     imagen_principal: '',
+    posicion_imagen: 'center',
     vram_min: '4GB',
     vram_rec: '6GB',
     notas: 'LoRA para añadir detalle extra. Peso recomendado: 0.5-0.8',
@@ -181,6 +185,7 @@ const demoSD: ModeloSD[] = [
     prompt_referencia: '',
     prompt_negativo_default: '',
     imagen_principal: '',
+    posicion_imagen: 'center',
     vram_min: '8GB',
     vram_rec: '12GB',
     notas: 'Corrige el problema de colores apagados en SDXL con FP16.',
@@ -207,6 +212,7 @@ const demoSD: ModeloSD[] = [
     prompt_referencia: '',
     prompt_negativo_default: '',
     imagen_principal: '',
+    posicion_imagen: 'center',
     vram_min: '4GB',
     vram_rec: '8GB',
     notas: 'Upscaler universal 4x. Excelente para fotos y arte digital.',
