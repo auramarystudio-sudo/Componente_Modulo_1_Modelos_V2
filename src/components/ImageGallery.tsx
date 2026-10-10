@@ -2,6 +2,7 @@
 // Muestra miniaturas completas y permite navegar en modal
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ImageGalleryProps {
   images: string[];
@@ -123,9 +124,9 @@ export default function ImageGallery({
         </div>
       </div>
 
-      {/* Modal con carrusel */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+      {/* Modal con carrusel - usando Portal para evitar conflictos de z-index */}
+      {modalOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
           {/* Overlay */}
           <div
             className="absolute inset-0 bg-black/95 backdrop-blur-sm"
@@ -223,7 +224,8 @@ export default function ImageGallery({
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
