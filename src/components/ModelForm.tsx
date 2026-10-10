@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo, CategoriaModelo } from '../lib/demoData';
 import { importarDesdeCivitai, esUrlCivitai } from '../lib/importers/civitai';
 import { importarDesdeHuggingFace, esUrlHuggingFace } from '../lib/importers/huggingface';
+import ImageSelector from './ImageSelector';
 
 interface ModelFormProps {
   onClose: () => void;
@@ -33,6 +34,7 @@ const baseSD: Partial<ModeloSD> = {
   prompt_referencia: '',
   prompt_negativo_default: '',
   imagen_principal: '',
+  posicion_imagen: 'center',
   vram_min: '',
   vram_rec: '',
   notas: '',
@@ -97,6 +99,9 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
   const [enviando, setEnviando] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Estado para el selector de imagen
+  const [selectorAbierto, setSelectorAbierto] = useState(false);
+
   // Estado para importación
   const [urlImportar, setUrlImportar] = useState('');
   const [importando, setImportando] = useState(false);
@@ -142,6 +147,17 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
       reader.onloadend = () => setArchivoPreview(reader.result as string);
       reader.readAsDataURL(file);
     }
+  };
+
+  // Manejar selección de imagen desde la galería
+  const handleImageSelect = (imageUrl: string, position: string) => {
+    setFormData(prev => ({
+      ...prev,
+      imagen_principal: imageUrl,
+      posicion_imagen: position,
+    }));
+    setArchivoPreview(imageUrl);
+    setArchivo(null); // Limpiar archivo subido si se selecciona de galería
   };
 
   // Enviar formulario manual
@@ -472,21 +488,44 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                 <div className="flex items-start gap-4">
                   <div
                     className="w-20 h-20 rounded-lg bg-slate-700 border border-slate-600 flex items-center justify-center overflow-hidden cursor-pointer hover:border-cyan-500 transition-colors"
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => setSelectorAbierto(true)}
+                    style={{ objectPosition: (formData as any).posicion_imagen || 'center' }}
                   >
                     {archivoPreview ? (
-                      <img src={archivoPreview} alt="Preview" className="w-full h-full object-cover" />
+                      <img 
+                        src={archivoPreview} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: (formData as any).posicion_imagen || 'center' }}
+                      />
                     ) : (
                       <span className="text-2xl text-slate-500">📷</span>
                     )}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 space-y-2">
                     <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-                    <button type="button" onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 text-sm rounded-lg transition-colors">
-                      Seleccionar
-                    </button>
-                    {archivo && <p className="mt-1 text-xs text-slate-400">{archivo.name}</p>}
+                    <div className="flex gap-2">
+                      <button 
+                        type="button" 
+                        onClick={() => setSelectorAbierto(true)}
+                        className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-sm rounded-lg transition-colors"
+                      >
+                        🖼️ De la galería
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 text-sm rounded-lg transition-colors"
+                      >
+                        📁 Subir archivo
+                      </button>
+                    </div>
+                    {archivo && <p className="text-xs text-slate-400">{archivo.name}</p>}
+                    {(formData as any).posicion_imagen && archivoPreview && (
+                      <p className="text-xs text-cyan-400">
+                        Posición: {(formData as any).posicion_imagen}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -510,6 +549,16 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
           )}
         </div>
       </div>
+
+      {/* Selector de imagen desde galería */}
+      <ImageSelector
+        isOpen={selectorAbierto}
+        onClose={() => setSelectorAbierto(false)}
+        images={((formData as any).galeria_urls || '').split('\n').filter(Boolean)}
+        currentImage={archivoPreview || (formData as any).imagen_principal || ''}
+        currentPosition={(formData as any).posicion_imagen || 'center'}
+        onSelect={handleImageSelect}
+      />
     </div>
   );
 }
