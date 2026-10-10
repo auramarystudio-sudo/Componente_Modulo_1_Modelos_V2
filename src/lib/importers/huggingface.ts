@@ -9,6 +9,7 @@ export interface HuggingFaceImportResult {
   tags: string;
   url_huggingface: string;
   imagen_principal: string;
+  galeria_urls: string;
   notas: string;
   pipeline_tag: string;
   downloads: number;
@@ -69,6 +70,30 @@ export async function importarDesdeHuggingFace(url: string): Promise<HuggingFace
     // Construir URL de la imagen del card
     const imagenUrl = `https://huggingface.co/${repoId}/resolve/main/thumbnail.png`;
 
+    // Intentar extraer galería de imágenes del README
+    let galeriaUrls = '';
+    try {
+      const readmeResponse = await fetch(`https://huggingface.co/${repoId}/raw/main/README.md`);
+      if (readmeResponse.ok) {
+        const readmeText = await readmeResponse.text();
+        // Extraer URLs de imágenes del markdown (formato ![alt](url))
+        const imageRegex = /!\[.*?\]\((https?:\/\/[^\s)]+\.(png|jpg|jpeg|webp|gif)(\?[^\s)]*)?)\)/gi;
+        const matches = readmeText.match(imageRegex) || [];
+        const urls = matches
+          .map(match => {
+            const urlMatch = match.match(/\((https?:\/\/[^\s)]+)\)/);
+            return urlMatch ? urlMatch[1] : null;
+          })
+          .filter((u): u is string => u !== null && !u.includes('huggingface.co/datasets'));
+        
+        // Eliminar duplicados y limitar a 20 imágenes
+        const urlsUnicas = [...new Set(urls)].slice(0, 20);
+        galeriaUrls = urlsUnicas.join('\n');
+      }
+    } catch (err) {
+      console.warn('No se pudo obtener el README para extraer galería:', err);
+    }
+
     return {
       nombre: data.modelId || repoId,
       tipo,
@@ -76,6 +101,7 @@ export async function importarDesdeHuggingFace(url: string): Promise<HuggingFace
       tags: (data.tags || []).join(', '),
       url_huggingface: url,
       imagen_principal: imagenUrl,
+      galeria_urls: galeriaUrls,
       notas: data.cardData?.short_description || data.description || '',
       pipeline_tag: pipelineTag,
       downloads: data.downloads || 0,

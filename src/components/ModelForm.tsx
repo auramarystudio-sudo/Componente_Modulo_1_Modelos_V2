@@ -186,6 +186,7 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
           tags: result.tags,
           url_civitai: result.url_civitai,
           imagen_principal: result.imagen_principal,
+          galeria_urls: result.galeria_urls,
           notas: result.notas,
         });
         setArchivoPreview(result.imagen_principal);
@@ -219,6 +220,7 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
             tags: result.tags,
             url_huggingface: result.url_huggingface,
             imagen_principal: result.imagen_principal,
+            galeria_urls: result.galeria_urls,
             notas: result.notas,
           });
         } else {
@@ -364,6 +366,25 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                       {(formData.tags as string).split(',').slice(0, 5).map((t: string, i: number) => (
                         <span key={i} className="px-1.5 py-0.5 bg-slate-700 rounded text-xs text-slate-300">{t.trim()}</span>
                       ))}
+                    </div>
+                  )}
+                  {/* Preview de galería importada */}
+                  {(formData as any).galeria_urls && (
+                    <div className="mt-3">
+                      <p className="text-xs text-cyan-400 mb-2">
+                        🖼️ Galería importada: {((formData as any).galeria_urls as string).split('\n').filter(Boolean).length} imágenes
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {((formData as any).galeria_urls as string).split('\n').filter(Boolean).slice(0, 6).map((url: string, i: number) => (
+                          <img
+                            key={i}
+                            src={url.trim()}
+                            alt={`Preview ${i + 1}`}
+                            className="w-16 h-16 object-cover rounded border border-slate-600"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -559,6 +580,37 @@ function renderSDFields(
           <input type="number" name="clip_skip" value={data.clip_skip || ''} onChange={handleNumberChange}
             className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none" />
         </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-1.5">
+          Galería de Imágenes
+          {data.galeria_urls && (
+            <span className="ml-2 text-xs text-cyan-400">
+              ({data.galeria_urls.split('\n').filter(Boolean).length} imágenes)
+            </span>
+          )}
+        </label>
+        <textarea
+          name="galeria_urls"
+          value={data.galeria_urls || ''}
+          onChange={handleChange}
+          placeholder="URLs de imágenes separadas por salto de línea"
+          rows={4}
+          className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500 resize-y font-mono text-xs"
+        />
+        {data.galeria_urls && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {data.galeria_urls.split('\n').filter(Boolean).slice(0, 6).map((url: string, i: number) => (
+              <img
+                key={i}
+                src={url.trim()}
+                alt={`Preview ${i + 1}`}
+                className="w-16 h-16 object-cover rounded border border-slate-600"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            ))}
+          </div>
+        )}
       </div>
       <div>
         <label className="block text-sm font-medium text-slate-300 mb-1.5">Prompt de Referencia</label>

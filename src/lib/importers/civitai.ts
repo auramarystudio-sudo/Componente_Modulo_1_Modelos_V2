@@ -9,6 +9,7 @@ export interface CivitaiImportResult {
   tags: string;
   url_civitai: string;
   imagen_principal: string;
+  galeria_urls: string;
   notas: string;
   creador: string;
   nsfw: boolean;
@@ -16,6 +17,12 @@ export interface CivitaiImportResult {
     name: string;
     baseModel: string;
     trainedWords: string[];
+    images: Array<{
+      url: string;
+      nsfw: string;
+      width: number;
+      height: number;
+    }>;
   }>;
 }
 
@@ -56,6 +63,32 @@ export async function importarDesdeCivitai(url: string): Promise<CivitaiImportRe
     const primeraVersion = data.modelVersions?.[0];
     const primeraImagen = primeraVersion?.images?.[0]?.url || '';
 
+    // Extraer galería completa de todas las versiones
+    const todasLasImagenes: string[] = [];
+    const versionesMapeadas = (data.modelVersions || []).slice(0, 5).map((v: any) => {
+      const imagenesVersion = (v.images || [])
+        .filter((img: any) => img.url && !img.nsfw || img.nsfw === 'None')
+        .map((img: any) => {
+          todasLasImagenes.push(img.url);
+          return {
+            url: img.url,
+            nsfw: img.nsfw || 'None',
+            width: img.width || 0,
+            height: img.height || 0,
+          };
+        });
+      
+      return {
+        name: v.name,
+        baseModel: v.baseModel,
+        trainedWords: v.trainedWords || [],
+        images: imagenesVersion,
+      };
+    });
+
+    // Unir todas las URLs de la galería (máximo 20 imágenes)
+    const galeriaUnica = [...new Set(todasLasImagenes)].slice(0, 20);
+
     return {
       nombre: data.name || 'Sin nombre',
       tipo: (data.type || 'checkpoint').toLowerCase(),
@@ -63,14 +96,11 @@ export async function importarDesdeCivitai(url: string): Promise<CivitaiImportRe
       tags: (data.tags || []).join(', '),
       url_civitai: url,
       imagen_principal: primeraImagen,
+      galeria_urls: galeriaUnica.join('\n'),
       notas: (data.description || '').replace(/<[^>]*>/g, '').substring(0, 500),
       creador: data.creator?.username || '',
       nsfw: data.nsfw || false,
-      versiones: (data.modelVersions || []).slice(0, 3).map((v: { name: string; baseModel: string; trainedWords: string[] }) => ({
-        name: v.name,
-        baseModel: v.baseModel,
-        trainedWords: v.trainedWords || [],
-      })),
+      versiones: versionesMapeadas,
     };
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {

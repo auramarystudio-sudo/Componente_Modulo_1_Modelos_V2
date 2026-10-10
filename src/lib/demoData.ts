@@ -97,7 +97,7 @@ const demoSD: ModeloSD[] = [
     cfg_scale: 7,
     clip_skip: 1,
     tags: 'realista, fotografía, retratos, 8k',
-    galeria_urls: '',
+    galeria_urls: 'https://image.civitai.com/xG1nkHdTMzGvZgyjpY7gMw/12345678-1234-1234-1234-123456789012/width=480/01.jpeg\nhttps://image.civitai.com/xG1nkHdTMzGvZgyjpY7gMw/12345678-1234-1234-1234-123456789013/width=480/02.jpeg\nhttps://image.civitai.com/xG1nkHdTMzGvZgyjpY7gMw/12345678-1234-1234-1234-123456789014/width=480/03.jpeg',
     url_civitai: 'https://civitai.com/models/4201',
     url_huggingface: '',
     prompt_referencia: 'masterpiece, best quality, photorealistic, 8k uhd, high resolution, detailed skin',

@@ -154,6 +154,16 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete }: Mo
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
+        ) : modelo.categoria === 'sd' && (modelo as ModeloSD).galeria_urls ? (
+          // Si no hay imagen principal pero hay galería, mostrar la primera imagen de la galería
+          <img
+            src={(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean)[0]?.trim() || ''}
+            alt={modelo.nombre}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
         ) : (
           <span className="text-4xl opacity-30 group-hover:opacity-50 transition-opacity">
             {config.icon}
@@ -167,6 +177,12 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete }: Mo
         <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-medium border ${badgeColor}`}>
           {modelo.tipo}
         </span>
+        {/* Indicador de galería */}
+        {modelo.categoria === 'sd' && (modelo as ModeloSD).galeria_urls && (modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).length > 0 && (
+          <span className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-sm rounded text-xs text-white/90 font-medium">
+            🖼️ {(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).length}
+          </span>
+        )}
       </div>
 
       {/* Contenido */}
