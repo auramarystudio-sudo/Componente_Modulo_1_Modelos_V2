@@ -577,10 +577,15 @@ function renderSDFields(
             placeholder="https://civitai.com/models/..." className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1.5">Clip Skip</label>
-          <input type="number" name="clip_skip" value={data.clip_skip || ''} onChange={handleNumberChange}
-            className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none" />
+          <label className="block text-sm font-medium text-slate-300 mb-1.5">URL HuggingFace</label>
+          <input type="url" name="url_huggingface" value={data.url_huggingface || ''} onChange={handleChange}
+            placeholder="https://huggingface.co/..." className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
         </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-1.5">Clip Skip</label>
+        <input type="number" name="clip_skip" value={data.clip_skip || ''} onChange={handleNumberChange}
+          className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none" />
       </div>
       <div>
         <label className="block text-sm font-medium text-slate-300 mb-1.5">

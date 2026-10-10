@@ -3,13 +3,13 @@
 
 import React, { useEffect } from 'react';
 import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo } from '../lib/demoData';
-import ImageGallery from './ImageGallery';
 
 interface ModelDetailProps {
   modelo: Modelo;
   onClose: () => void;
   onEdit: (modelo: Modelo) => void;
   onDelete: (id: string, categoria: string) => void;
+  onSetMainImage?: (id: string, categoria: string, imageUrl: string) => void;
 }
 
 // Función para copiar texto al portapapeles
@@ -27,7 +27,7 @@ function copiarAlPortapapeles(texto: string) {
   });
 }
 
-export default function ModelDetail({ modelo, onClose, onEdit, onDelete }: ModelDetailProps) {
+export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetMainImage }: ModelDetailProps) {
   // Cerrar con Escape
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -282,12 +282,67 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete }: Model
 
           {/* Galería */}
           {modelo.categoria === 'sd' && (modelo as ModeloSD).galeria_urls && (
-            <ImageGallery
-              images={(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean)}
-              title="Galería de Imágenes"
-              columns={4}
-              thumbnailHeight="h-40"
-            />
+            <div>
+              <h4 className="text-sm font-semibold text-cyan-400 uppercase tracking-wide mb-3">
+                🖼️ Galería de Imágenes
+                <span className="ml-2 text-xs text-slate-400 font-normal">
+                  ({(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).length} imágenes)
+                </span>
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).map((url: string, i: number) => (
+                  <div key={i} className="group relative">
+                    <div className="h-40 bg-slate-900 border border-slate-700 rounded-lg overflow-hidden hover:border-cyan-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/10">
+                      <img
+                        src={url.trim()}
+                        alt={`Galería ${i + 1}`}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                        onError={(e) => {
+                          const parent = (e.target as HTMLImageElement).parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-600 text-2xl">❌</div>';
+                          }
+                        }}
+                      />
+                    </div>
+                    {/* Overlay con acciones */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-colors rounded-lg flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                      <button
+                        onClick={() => {
+                          const images = (modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean);
+                          const galleryModal = document.createElement('div');
+                          galleryModal.innerHTML = `
+                            <div style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;">
+                              <img src="${url.trim()}" style="max-width:90vw;max-height:90vh;object-fit:contain;" />
+                            </div>
+                          `;
+                          document.body.appendChild(galleryModal);
+                          galleryModal.onclick = () => document.body.removeChild(galleryModal);
+                        }}
+                        className="bg-white/20 backdrop-blur-sm rounded-full p-2 hover:bg-white/30 transition-colors"
+                        title="Ver imagen completa"
+                      >
+                        <span className="text-white text-xl">🔍</span>
+                      </button>
+                      {onSetMainImage && (
+                        <button
+                          onClick={() => onSetMainImage(modelo.id, modelo.categoria, url.trim())}
+                          className="bg-cyan-600/80 backdrop-blur-sm rounded-full p-2 hover:bg-cyan-600 transition-colors"
+                          title="Establecer como imagen principal"
+                        >
+                          <span className="text-white text-xl">⭐</span>
+                        </button>
+                      )}
+                    </div>
+                    {/* Número de imagen */}
+                    <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-sm rounded text-xs text-white/90">
+                      {i + 1}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Notas */}

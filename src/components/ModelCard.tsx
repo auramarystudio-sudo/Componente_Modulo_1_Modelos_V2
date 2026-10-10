@@ -141,8 +141,19 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete }: Mo
     }
   };
 
+  // Obtener URLs externas
+  const urlCivitai = modelo.categoria === 'sd' ? (modelo as ModeloSD).url_civitai : '';
+  const urlHuggingFace = modelo.categoria === 'sd' 
+    ? (modelo as ModeloSD).url_huggingface 
+    : modelo.categoria === 'llm' 
+    ? (modelo as ModeloLLM).url_huggingface 
+    : '';
+
   return (
-    <div className={`bg-gradient-to-br ${config.bg} border ${config.border} rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg group flex flex-col`}>
+    <div 
+      className={`bg-gradient-to-br ${config.bg} border ${config.border} rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg group flex flex-col cursor-pointer`}
+      onClick={() => onViewDetail(modelo)}
+    >
       {/* Imagen / Placeholder */}
       <div className="h-32 relative overflow-hidden flex items-center justify-center bg-slate-800/50">
         {modelo.imagen_principal ? (
@@ -218,21 +229,54 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete }: Mo
 
         {/* Botones de acción */}
         <div className="flex gap-1.5 mt-3 pt-3 border-t border-slate-700/50">
+          {/* Botón Civitai */}
+          {urlCivitai && (
+            <a
+              href={urlCivitai}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex-1 px-2 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-700/30 text-blue-300 text-xs font-medium rounded-lg transition-colors text-center"
+              title="Ver en Civitai"
+            >
+              🔗 Civitai
+            </a>
+          )}
+          
+          {/* Botón HuggingFace */}
+          {urlHuggingFace && (
+            <a
+              href={urlHuggingFace}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex-1 px-2 py-1.5 bg-yellow-600/20 hover:bg-yellow-600/40 border border-yellow-700/30 text-yellow-300 text-xs font-medium rounded-lg transition-colors text-center"
+              title="Ver en HuggingFace"
+            >
+              🤗 HF
+            </a>
+          )}
+
+          {/* Botón Editar (icono) */}
           <button
-            onClick={() => onViewDetail(modelo)}
-            className="flex-1 px-2 py-1.5 bg-cyan-600/20 hover:bg-cyan-600/40 border border-cyan-700/30 text-cyan-300 text-xs font-medium rounded-lg transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(modelo);
+            }}
+            className="px-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium rounded-lg transition-colors"
+            title="Editar modelo"
           >
-            👁️ Ver
+            ✏️
           </button>
+
+          {/* Botón Eliminar */}
           <button
-            onClick={() => onEdit(modelo)}
-            className="flex-1 px-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium rounded-lg transition-colors"
-          >
-            ✏️ Editar
-          </button>
-          <button
-            onClick={handleDelete}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete();
+            }}
             className="px-2 py-1.5 bg-red-900/20 hover:bg-red-900/40 border border-red-800/30 text-red-400 text-xs font-medium rounded-lg transition-colors"
+            title="Eliminar modelo"
           >
             🗑️
           </button>

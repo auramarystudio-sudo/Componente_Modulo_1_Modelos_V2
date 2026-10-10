@@ -204,6 +204,36 @@ export default function ModelosManager() {
     }
   };
 
+  // Establecer imagen principal desde la galería
+  const handleSetMainImage = async (id: string, categoria: string, imageUrl: string) => {
+    try {
+      if (isDemoMode()) {
+        setModelos(prev => prev.map(m => {
+          if (m.id === id) {
+            return { ...m, imagen_principal: imageUrl } as Modelo;
+          }
+          return m;
+        }));
+      } else {
+        const collectionName = categoria === 'sd' ? 'modelos_sd' : categoria === 'llm' ? 'modelos_llm' : 'modelos_video';
+        await pbClient.collection(collectionName).update(id, { imagen_principal: imageUrl });
+        setModelos(prev => prev.map(m => {
+          if (m.id === id) {
+            return { ...m, imagen_principal: imageUrl } as Modelo;
+          }
+          return m;
+        }));
+      }
+      // Actualizar el modelo en detalle si está abierto
+      if (modeloDetalle && modeloDetalle.id === id) {
+        setModeloDetalle({ ...modeloDetalle, imagen_principal: imageUrl } as Modelo);
+      }
+    } catch (err) {
+      console.error('Error al establecer imagen principal:', err);
+      alert('Error al establecer la imagen principal.');
+    }
+  };
+
   // Resetear subtipo al cambiar tab
   useEffect(() => {
     setFiltroSubtipo('');
@@ -352,6 +382,7 @@ export default function ModelosManager() {
           onClose={() => setModeloDetalle(null)}
           onEdit={(m) => { setModeloEditando(m); setModeloDetalle(null); setModalFormAbierto(true); }}
           onDelete={handleEliminar}
+          onSetMainImage={handleSetMainImage}
         />
       )}
 
