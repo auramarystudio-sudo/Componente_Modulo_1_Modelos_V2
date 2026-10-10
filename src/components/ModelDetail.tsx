@@ -4,6 +4,7 @@
 import React, { useEffect } from 'react';
 import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo } from '../lib/demoData';
 import { openExternalUrl } from '../lib/urlUtils';
+import { getImageStyle } from './ImageSelector';
 
 interface ModelDetailProps {
   modelo: Modelo;
@@ -126,8 +127,8 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetMa
             <img
               src={modelo.imagen_principal}
               alt={modelo.nombre}
-              className="w-full h-full object-cover opacity-60"
-              style={{ objectPosition: modelo.categoria === 'sd' ? (modelo as ModeloSD).posicion_imagen || 'center' : 'center' }}
+              className="w-full h-full opacity-60"
+              style={modelo.categoria === 'sd' ? getImageStyle((modelo as ModeloSD).posicion_imagen || 'center') : { objectFit: 'cover', objectPosition: 'center' }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           ) : (
@@ -170,19 +171,34 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetMa
         {/* Control de posición de imagen (solo para SD) */}
         {modelo.categoria === 'sd' && modelo.imagen_principal && onSetImagePosition && (
           <div className="px-6 py-3 bg-slate-800/50 border-b border-slate-700">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <span className="text-sm text-slate-400">📐 Posición:</span>
               <div className="flex gap-1.5 flex-wrap">
                 {[
+                  // Modos especiales
+                  { value: 'stretch', label: '⤢ Estirar' },
+                  { value: 'top-landing', label: '↑ Top Landing' },
+                  { value: 'center-landing', label: '● Center Landing' },
+                  { value: 'mid-landing', label: '◐ Mid Landing' },
+                  { value: 'bottom-landing', label: '↓ Bottom Landing' },
+                  // Posiciones verticales granulares
+                  { value: 'top-10', label: '↑10%' },
+                  { value: 'top-25', label: '↑25%' },
+                  { value: 'top-40', label: '↑40%' },
+                  { value: 'top-60', label: '↓40%' },
+                  { value: 'top-75', label: '↓25%' },
+                  { value: 'top-90', label: '↓10%' },
+                  // Posiciones básicas
                   { value: 'top', label: '↑ Arriba' },
                   { value: 'center', label: '● Centro' },
                   { value: 'bottom', label: '↓ Abajo' },
                   { value: 'left', label: '← Izquierda' },
                   { value: 'right', label: '→ Derecha' },
+                  // Esquinas
                   { value: 'top left', label: '↖ Sup. Izq.' },
                   { value: 'top right', label: '↗ Sup. Der.' },
-                  { value: 'bottom left', label: '↘ Inf. Izq.' },
-                  { value: 'bottom right', label: '↙ Inf. Der.' },
+                  { value: 'bottom left', label: '↙ Inf. Izq.' },
+                  { value: 'bottom right', label: '↘ Inf. Der.' },
                 ].map((pos) => (
                   <button
                     key={pos.value}

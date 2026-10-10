@@ -14,16 +14,51 @@ interface ImageSelectorProps {
 }
 
 const POSICIONES = [
-  { value: 'top', label: '↑ Arriba' },
-  { value: 'center', label: '● Centro' },
-  { value: 'bottom', label: '↓ Abajo' },
-  { value: 'left', label: '← Izquierda' },
-  { value: 'right', label: '→ Derecha' },
-  { value: 'top left', label: '↖ Sup. Izq.' },
-  { value: 'top right', label: '↗ Sup. Der.' },
-  { value: 'bottom left', label: '↘ Inf. Izq.' },
-  { value: 'bottom right', label: '↙ Inf. Der.' },
+  // Modos especiales
+  { value: 'stretch', label: '⤢ Estirar', type: 'special' },
+  { value: 'top-landing', label: '↑ Top Landing', type: 'special' },
+  { value: 'center-landing', label: '● Center Landing', type: 'special' },
+  { value: 'mid-landing', label: '◐ Mid Landing', type: 'special' },
+  { value: 'bottom-landing', label: '↓ Bottom Landing', type: 'special' },
+  // Posiciones verticales granulares
+  { value: 'top-10', label: '↑10%', type: 'vertical' },
+  { value: 'top-25', label: '↑25%', type: 'vertical' },
+  { value: 'top-40', label: '↑40%', type: 'vertical' },
+  { value: 'top-60', label: '↓40%', type: 'vertical' },
+  { value: 'top-75', label: '↓25%', type: 'vertical' },
+  { value: 'top-90', label: '↓10%', type: 'vertical' },
+  // Posiciones básicas
+  { value: 'top', label: '↑ Arriba', type: 'basic' },
+  { value: 'center', label: '● Centro', type: 'basic' },
+  { value: 'bottom', label: '↓ Abajo', type: 'basic' },
+  { value: 'left', label: '← Izquierda', type: 'basic' },
+  { value: 'right', label: '→ Derecha', type: 'basic' },
+  // Esquinas
+  { value: 'top left', label: '↖ Sup. Izq.', type: 'corner' },
+  { value: 'top right', label: '↗ Sup. Der.', type: 'corner' },
+  { value: 'bottom left', label: '↙ Inf. Izq.', type: 'corner' },
+  { value: 'bottom right', label: '↘ Inf. Der.', type: 'corner' },
 ];
+
+// Función helper para convertir posición a estilos CSS
+export function getImageStyle(position: string): React.CSSProperties {
+  // Modos especiales
+  if (position === 'stretch') {
+    return { objectFit: 'fill' };
+  }
+  if (position.endsWith('-landing')) {
+    return { objectFit: 'contain', backgroundColor: 'transparent' };
+  }
+  
+  // Posiciones verticales granulares (porcentajes)
+  if (position.startsWith('top-')) {
+    const percent = position.split('-')[1];
+    return { objectFit: 'cover', objectPosition: `center ${percent}%` };
+  }
+  
+  // Posiciones básicas
+  return { objectFit: 'cover', objectPosition: position };
+}
 
 export default function ImageSelector({
   isOpen,
@@ -141,8 +176,8 @@ export default function ImageSelector({
                       <img
                         src={selectedImage}
                         alt="Preview"
-                        className="w-full h-full object-cover"
-                        style={{ objectPosition: selectedPosition }}
+                        className="w-full h-full"
+                        style={getImageStyle(selectedPosition)}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-4xl opacity-30">
@@ -162,20 +197,85 @@ export default function ImageSelector({
               {selectedImage && (
                 <div>
                   <p className="text-xs text-slate-400 mb-2">Ajusta la posición de la imagen:</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {POSICIONES.map((pos) => (
-                      <button
-                        key={pos.value}
-                        onClick={() => setSelectedPosition(pos.value)}
-                        className={`px-3 py-2 text-xs rounded-lg transition-colors ${
-                          selectedPosition === pos.value
-                            ? 'bg-cyan-600 text-white'
-                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                        }`}
-                      >
-                        {pos.label}
-                      </button>
-                    ))}
+                  
+                  {/* Modos especiales */}
+                  <div className="mb-3">
+                    <p className="text-xs text-slate-500 mb-1">Modos especiales:</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {POSICIONES.filter(p => p.type === 'special').map((pos) => (
+                        <button
+                          key={pos.value}
+                          onClick={() => setSelectedPosition(pos.value)}
+                          className={`px-3 py-2 text-xs rounded-lg transition-colors ${
+                            selectedPosition === pos.value
+                              ? 'bg-cyan-600 text-white'
+                              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                          }`}
+                        >
+                          {pos.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Posiciones verticales granulares */}
+                  <div className="mb-3">
+                    <p className="text-xs text-slate-500 mb-1">Posiciones verticales:</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {POSICIONES.filter(p => p.type === 'vertical').map((pos) => (
+                        <button
+                          key={pos.value}
+                          onClick={() => setSelectedPosition(pos.value)}
+                          className={`px-3 py-2 text-xs rounded-lg transition-colors ${
+                            selectedPosition === pos.value
+                              ? 'bg-cyan-600 text-white'
+                              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                          }`}
+                        >
+                          {pos.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Posiciones básicas */}
+                  <div className="mb-3">
+                    <p className="text-xs text-slate-500 mb-1">Posiciones básicas:</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {POSICIONES.filter(p => p.type === 'basic').map((pos) => (
+                        <button
+                          key={pos.value}
+                          onClick={() => setSelectedPosition(pos.value)}
+                          className={`px-3 py-2 text-xs rounded-lg transition-colors ${
+                            selectedPosition === pos.value
+                              ? 'bg-cyan-600 text-white'
+                              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                          }`}
+                        >
+                          {pos.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Esquinas */}
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Esquinas:</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {POSICIONES.filter(p => p.type === 'corner').map((pos) => (
+                        <button
+                          key={pos.value}
+                          onClick={() => setSelectedPosition(pos.value)}
+                          className={`px-3 py-2 text-xs rounded-lg transition-colors ${
+                            selectedPosition === pos.value
+                              ? 'bg-cyan-600 text-white'
+                              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                          }`}
+                        >
+                          {pos.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}

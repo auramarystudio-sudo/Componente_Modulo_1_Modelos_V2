@@ -4,6 +4,7 @@
 import React from 'react';
 import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo } from '../lib/demoData';
 import { openExternalUrl } from '../lib/urlUtils';
+import { getImageStyle } from './ImageSelector';
 
 interface ModelCardProps {
   modelo: Modelo;
@@ -161,8 +162,8 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete }: Mo
           <img
             src={modelo.imagen_principal}
             alt={modelo.nombre}
-            className="w-full h-full object-cover"
-            style={{ objectPosition: modelo.categoria === 'sd' ? (modelo as ModeloSD).posicion_imagen || 'center' : 'center' }}
+            className="w-full h-full"
+            style={modelo.categoria === 'sd' ? getImageStyle((modelo as ModeloSD).posicion_imagen || 'center') : { objectFit: 'cover', objectPosition: 'center' }}
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
