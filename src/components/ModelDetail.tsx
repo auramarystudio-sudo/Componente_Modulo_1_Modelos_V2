@@ -3,6 +3,7 @@
 
 import React, { useEffect } from 'react';
 import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo } from '../lib/demoData';
+import { openExternalUrl } from '../lib/urlUtils';
 
 interface ModelDetailProps {
   modelo: Modelo;
@@ -181,35 +182,37 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetMa
           {/* Enlaces externos */}
           <div className="flex flex-wrap gap-2">
             {modelo.categoria === 'sd' && (modelo as ModeloSD).url_civitai && (
-              <a
-                href={(modelo as ModeloSD).url_civitai}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => openExternalUrl((modelo as ModeloSD).url_civitai, 'Civitai')}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600/20 border border-blue-500/30 text-blue-300 rounded-lg text-sm hover:bg-blue-600/30 transition-colors"
+                title={(modelo as ModeloSD).url_civitai}
               >
                 🔗 Civitai
-              </a>
+              </button>
             )}
             {(modelo.categoria === 'sd' && (modelo as ModeloSD).url_huggingface ||
               modelo.categoria === 'llm' && (modelo as ModeloLLM).url_huggingface) && (
-              <a
-                href={modelo.categoria === 'sd' ? (modelo as ModeloSD).url_huggingface : (modelo as ModeloLLM).url_huggingface}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => {
+                  const url = modelo.categoria === 'sd' 
+                    ? (modelo as ModeloSD).url_huggingface 
+                    : (modelo as ModeloLLM).url_huggingface;
+                  openExternalUrl(url, 'HuggingFace');
+                }}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-600/20 border border-yellow-500/30 text-yellow-300 rounded-lg text-sm hover:bg-yellow-600/30 transition-colors"
+                title={modelo.categoria === 'sd' ? (modelo as ModeloSD).url_huggingface : (modelo as ModeloLLM).url_huggingface}
               >
                 🤗 HuggingFace
-              </a>
+              </button>
             )}
             {modelo.categoria === 'llm' && (modelo as ModeloLLM).url_descarga && (
-              <a
-                href={(modelo as ModeloLLM).url_descarga}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => openExternalUrl((modelo as ModeloLLM).url_descarga, 'descarga')}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600/20 border border-green-500/30 text-green-300 rounded-lg text-sm hover:bg-green-600/30 transition-colors"
+                title={(modelo as ModeloLLM).url_descarga}
               >
                 📥 Descargar
-              </a>
+              </button>
             )}
           </div>
 

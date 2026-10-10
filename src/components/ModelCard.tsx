@@ -3,6 +3,7 @@
 
 import React from 'react';
 import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo } from '../lib/demoData';
+import { openExternalUrl } from '../lib/urlUtils';
 
 interface ModelCardProps {
   modelo: Modelo;
@@ -231,30 +232,30 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete }: Mo
         <div className="flex gap-1.5 mt-3 pt-3 border-t border-slate-700/50">
           {/* Botón Civitai */}
           {urlCivitai && (
-            <a
-              href={urlCivitai}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openExternalUrl(urlCivitai, 'Civitai');
+              }}
               className="flex-1 px-2 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-700/30 text-blue-300 text-xs font-medium rounded-lg transition-colors text-center"
-              title="Ver en Civitai"
+              title={`Abrir en Civitai: ${urlCivitai}`}
             >
               🔗 Civitai
-            </a>
+            </button>
           )}
           
           {/* Botón HuggingFace */}
           {urlHuggingFace && (
-            <a
-              href={urlHuggingFace}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openExternalUrl(urlHuggingFace, 'HuggingFace');
+              }}
               className="flex-1 px-2 py-1.5 bg-yellow-600/20 hover:bg-yellow-600/40 border border-yellow-700/30 text-yellow-300 text-xs font-medium rounded-lg transition-colors text-center"
-              title="Ver en HuggingFace"
+              title={`Abrir en HuggingFace: ${urlHuggingFace}`}
             >
               🤗 HF
-            </a>
+            </button>
           )}
 
           {/* Botón Editar (icono) */}
