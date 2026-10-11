@@ -6,6 +6,7 @@ import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo, CategoriaModelo } from '
 import { importarDesdeCivitai, esUrlCivitai } from '../lib/importers/civitai';
 import { importarDesdeHuggingFace, esUrlHuggingFace } from '../lib/importers/huggingface';
 import ImageSelector from './ImageSelector';
+import EditableGallery from './EditableGallery';
 
 interface ModelFormProps {
   onClose: () => void;
@@ -158,6 +159,14 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
     }));
     setArchivoPreview(imageUrl);
     setArchivo(null); // Limpiar archivo subido si se selecciona de galería
+  };
+
+  // Manejar cambios en la galería (eliminar imágenes)
+  const handleGalleryChange = (images: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      galeria_urls: images.join('\n'),
+    }));
   };
 
   // Enviar formulario manual
@@ -384,24 +393,14 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                       ))}
                     </div>
                   )}
-                  {/* Preview de galería importada */}
-                  {(formData as any).galeria_urls && (
-                    <div className="mt-3">
-                      <p className="text-xs text-cyan-400 mb-2">
-                        🖼️ Galería importada: {((formData as any).galeria_urls as string).split('\n').filter(Boolean).length} imágenes
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {((formData as any).galeria_urls as string).split('\n').filter(Boolean).slice(0, 8).map((url: string, i: number) => (
-                          <div key={i} className="w-20 h-20 bg-slate-900 rounded border border-slate-600 overflow-hidden flex items-center justify-center">
-                            <img
-                              src={url.trim()}
-                              alt={`Preview ${i + 1}`}
-                              className="max-w-full max-h-full object-contain"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                          </div>
-                        ))}
-                      </div>
+                  {/* Galería importada editable */}
+                  {(formData as any).galeria_urls && ((formData as any).galeria_urls as string).split('\n').filter(Boolean).length > 0 && (
+                    <div className="mt-4">
+                      <EditableGallery
+                        images={((formData as any).galeria_urls as string).split('\n').filter(Boolean)}
+                        onImagesChange={handleGalleryChange}
+                        title="Galería importada"
+                      />
                     </div>
                   )}
                 </div>
@@ -452,7 +451,7 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
               </div>
 
               {/* Campos específicos por categoría */}
-              {categoriaActiva === 'sd' && renderSDFields(formData as Partial<ModeloSD>, handleChange, handleNumberChange)}
+              {categoriaActiva === 'sd' && renderSDFields(formData as Partial<ModeloSD>, handleChange, handleNumberChange, handleGalleryChange)}
               {categoriaActiva === 'llm' && renderLLMFields(formData as Partial<ModeloLLM>, handleChange, handleNumberChange)}
               {categoriaActiva === 'video' && renderVideoFields(formData as Partial<ModeloVideo>, handleChange, handleNumberChange)}
 
@@ -568,6 +567,7 @@ function renderSDFields(
   data: Partial<ModeloSD>,
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void,
   handleNumberChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  handleGalleryChange: (images: string[]) => void,
 ) {
   return (
     <>
@@ -636,36 +636,28 @@ function renderSDFields(
         <input type="number" name="clip_skip" value={data.clip_skip || ''} onChange={handleNumberChange}
           className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none" />
       </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1.5">
-          Galería de Imágenes
-          {data.galeria_urls && (
-            <span className="ml-2 text-xs text-cyan-400">
-              ({data.galeria_urls.split('\n').filter(Boolean).length} imágenes)
-            </span>
-          )}
-        </label>
-        <textarea
-          name="galeria_urls"
-          value={data.galeria_urls || ''}
-          onChange={handleChange}
-          placeholder="URLs de imágenes separadas por salto de línea"
-          rows={4}
-          className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500 resize-y font-mono text-xs"
-        />
-        {data.galeria_urls && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {data.galeria_urls.split('\n').filter(Boolean).slice(0, 8).map((url: string, i: number) => (
-              <div key={i} className="w-20 h-20 bg-slate-900 rounded border border-slate-600 overflow-hidden flex items-center justify-center">
-                <img
-                  src={url.trim()}
-                  alt={`Preview ${i + 1}`}
-                  className="max-w-full max-h-full object-contain"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
-              </div>
-            ))}
-          </div>
+      <div className="space-y-3">
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-1.5">
+            Galería de Imágenes (agregar URLs manualmente)
+          </label>
+          <textarea
+            name="galeria_urls"
+            value={data.galeria_urls || ''}
+            onChange={handleChange}
+            placeholder="URLs de imágenes separadas por salto de línea"
+            rows={3}
+            className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500 resize-y font-mono text-xs"
+          />
+        </div>
+        
+        {/* Galería editable */}
+        {data.galeria_urls && data.galeria_urls.split('\n').filter(Boolean).length > 0 && (
+          <EditableGallery
+            images={data.galeria_urls.split('\n').filter(Boolean)}
+            onImagesChange={handleGalleryChange}
+            title="Imágenes en la galería"
+          />
         )}
       </div>
       <div>
