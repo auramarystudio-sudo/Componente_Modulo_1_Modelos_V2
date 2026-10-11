@@ -15,17 +15,26 @@ export default function EditableGallery({
   emptyMessage = "No hay imágenes en la galería"
 }: EditableGalleryProps) {
   const [imageToDelete, setImageToDelete] = useState<number | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const handleDeleteClick = (index: number) => {
+    setImageToDelete(index);
+    // Pequeño delay para evitar que el click se propague al overlay
+    setTimeout(() => setShowConfirmModal(true), 10);
+  };
 
   const handleDeleteConfirm = () => {
     if (imageToDelete !== null) {
       const newImages = images.filter((_, index) => index !== imageToDelete);
       onImagesChange(newImages);
       setImageToDelete(null);
+      setShowConfirmModal(false);
     }
   };
 
   const handleDeleteCancel = () => {
     setImageToDelete(null);
+    setShowConfirmModal(false);
   };
 
   if (images.length === 0) {
@@ -70,7 +79,7 @@ export default function EditableGallery({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setImageToDelete(index);
+                  handleDeleteClick(index);
                 }}
                 className="bg-red-600 hover:bg-red-700 text-white rounded-full p-2 transition-colors shadow-lg"
                 title="Eliminar imagen"
@@ -90,7 +99,7 @@ export default function EditableGallery({
       </div>
 
       {/* Modal de confirmación - usando Portal para evitar conflictos */}
-      {imageToDelete !== null && createPortal(
+      {showConfirmModal && imageToDelete !== null && createPortal(
         <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
           <div 
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
@@ -99,7 +108,7 @@ export default function EditableGallery({
               handleDeleteCancel();
             }}
           />
-          <div className="relative bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full shadow-2xl">
+          <div className="relative bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-white mb-3">
               Confirmar eliminación
             </h3>
