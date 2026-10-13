@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { X, Upload, Image as ImageIcon, Sparkles } from 'lucide-react';
 import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo, CategoriaModelo } from '../lib/demoData';
 import { importarDesdeCivitai, esUrlCivitai } from '../lib/importers/civitai';
 import { importarDesdeHuggingFace, esUrlHuggingFace } from '../lib/importers/huggingface';
@@ -138,55 +139,74 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-3xl max-h-[90vh] bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
-          <h2 className="text-xl font-bold text-white">{modeloInicial ? '✏️ Editar Modelo' : '➕ Nuevo Modelo'}</h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300">✕</button>
+      <div className="relative w-full max-w-3xl max-h-[90vh] bg-slate-900 border border-slate-800/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl animate-fade-in">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 bg-slate-900/90 backdrop-blur-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              {modeloInicial ? 'Editar Modelo' : 'Nuevo Modelo'}
+            </h2>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white transition">
+            <X className="w-5 h-5" />
+          </button>
         </div>
+
+        {/* Tabs */}
         {!modeloInicial && (
-          <div className="flex border-b border-slate-700">
-            <button onClick={() => setTab('manual')} className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${tab === 'manual' ? 'text-cyan-400 border-b-2 border-cyan-400 bg-slate-800' : 'text-slate-400 hover:text-white'}`}>✍️ Manual</button>
-            <button onClick={() => setTab('importar')} className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${tab === 'importar' ? 'text-cyan-400 border-b-2 border-cyan-400 bg-slate-800' : 'text-slate-400 hover:text-white'}`}>🌐 Importar desde URL</button>
+          <div className="flex border-b border-slate-800/50 bg-slate-800/30">
+            <button onClick={() => setTab('manual')} className={`flex-1 px-4 py-3 text-sm font-medium transition ${tab === 'manual' ? 'text-cyan-400 border-b-2 border-cyan-500 bg-slate-900/50' : 'text-slate-400 hover:text-white'}`}>✍️ Manual</button>
+            <button onClick={() => setTab('importar')} className={`flex-1 px-4 py-3 text-sm font-medium transition ${tab === 'importar' ? 'text-cyan-400 border-b-2 border-cyan-500 bg-slate-900/50' : 'text-slate-400 hover:text-white'}`}>🌐 Importar desde URL</button>
           </div>
         )}
+
+        {/* Contenido */}
         <div className="flex-1 overflow-y-auto p-6">
           {tab === 'importar' ? (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <p className="text-sm text-slate-400">Pega una URL de <strong className="text-blue-400">Civitai</strong> o <strong className="text-yellow-400">HuggingFace</strong> para importar automáticamente los datos del modelo.</p>
               <div className="flex gap-2">
-                <input type="url" value={urlImportar} onChange={(e) => { setUrlImportar(e.target.value); setImportError(''); }} placeholder="https://civitai.com/models/4201 o https://huggingface.co/..." className="flex-1 px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
-                <button onClick={handleImportar} disabled={importando || !urlImportar.trim()} className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-700 disabled:text-slate-500 text-white font-medium rounded-lg">{importando ? '⏳ Analizando...' : '🔍 Analizar'}</button>
+                <input type="url" value={urlImportar} onChange={(e) => { setUrlImportar(e.target.value); setImportError(''); }} placeholder="https://civitai.com/models/4201 o https://huggingface.co/..." className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                <button onClick={handleImportar} disabled={importando || !urlImportar.trim()} className="flex items-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white text-sm font-medium transition shadow-lg">
+                  {importando ? '⏳ Analizando...' : '🔍 Analizar'}
+                </button>
               </div>
-              <div className="space-y-3">
+
+              {/* Selector de cantidad */}
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 backdrop-blur-sm space-y-3">
                 <label className="block text-sm font-medium text-slate-300">🖼️ Cantidad de imágenes a importar</label>
                 <div className="flex flex-wrap gap-2">
                   {[10, 20, 30, 50, 100].map((num) => (
-                    <button key={num} type="button" onClick={() => { setMaxImagenes(num); setUsarCustom(false); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${!usarCustom && maxImagenes === num ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>{num} imágenes</button>
+                    <button key={num} type="button" onClick={() => { setMaxImagenes(num); setUsarCustom(false); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition ${!usarCustom && maxImagenes === num ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg' : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50 border border-slate-700/50'}`}>{num} imágenes</button>
                   ))}
-                  <button type="button" onClick={() => setUsarCustom(true)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${usarCustom ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>Personalizado</button>
-                  <button type="button" onClick={() => { setMaxImagenes(-1); setUsarCustom(false); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${!usarCustom && maxImagenes === -1 ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>Todas</button>
+                  <button type="button" onClick={() => setUsarCustom(true)} className={`px-4 py-2 rounded-lg text-sm font-medium transition ${usarCustom ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg' : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50 border border-slate-700/50'}`}>Personalizado</button>
+                  <button type="button" onClick={() => { setMaxImagenes(-1); setUsarCustom(false); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition ${!usarCustom && maxImagenes === -1 ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg' : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50 border border-slate-700/50'}`}>Todas</button>
                 </div>
                 {usarCustom && (
                   <div className="flex items-center gap-2">
-                    <input type="number" value={maxImagenesCustom} onChange={(e) => setMaxImagenesCustom(e.target.value)} placeholder="Ingresa cantidad" min="1" max="500" className="flex-1 px-4 py-2 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                    <input type="number" value={maxImagenesCustom} onChange={(e) => setMaxImagenesCustom(e.target.value)} placeholder="Ingresa cantidad" min="1" max="500" className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     <span className="text-sm text-slate-400">imágenes</span>
                   </div>
                 )}
                 <p className="text-xs text-slate-500">{usarCustom && maxImagenesCustom ? `Se importarán ${maxImagenesCustom} imágenes` : maxImagenes === -1 ? 'Se importarán todas las imágenes disponibles' : `Se importarán ${maxImagenes} imágenes`}</p>
               </div>
-              {importError && <div className="px-4 py-3 bg-red-900/20 border border-red-800/30 rounded-lg text-red-300 text-sm">❌ {importError}</div>}
+
+              {importError && <div className="px-4 py-3 bg-red-950/50 border border-red-800/30 rounded-lg text-red-300 text-sm">❌ {importError}</div>}
               {importSuccess && (
-                <div className="px-4 py-3 bg-green-900/20 border border-green-800/30 rounded-lg">
+                <div className="px-4 py-3 bg-green-950/50 border border-green-800/30 rounded-lg">
                   <p className="text-green-300 text-sm mb-2">✅ Datos importados correctamente. Revisa y guarda.</p>
-                  <button onClick={() => { setTab('manual'); setImportSuccess(false); }} className="px-3 py-1.5 bg-green-600/30 hover:bg-green-600/50 border border-green-600/50 text-green-300 text-sm rounded-lg">→ Ir al formulario para editar</button>
+                  <button onClick={() => { setTab('manual'); setImportSuccess(false); }} className="px-3 py-1.5 bg-green-900/50 hover:bg-green-800/50 border border-green-700/30 text-green-300 text-sm rounded-lg transition">→ Ir al formulario para editar</button>
                 </div>
               )}
               {formData.nombre && importSuccess && (
-                <div className="mt-4 p-4 bg-slate-900/50 border border-slate-700 rounded-lg">
-                  <h4 className="text-sm font-semibold text-white mb-2">Preview:</h4>
-                  <p className="text-white font-medium">{formData.nombre}</p>
+                <div className="mt-4 p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl backdrop-blur-sm">
+                  <h4 className="text-sm font-semibold text-slate-300 mb-2">Preview:</h4>
+                  <p className="text-slate-100 font-medium">{formData.nombre}</p>
                   <p className="text-xs text-slate-400 mt-1">Tipo: {formData.tipo} | Categoría: {categoriaActiva}</p>
-                  {formData.tags && <div className="flex flex-wrap gap-1 mt-2">{(formData.tags as string).split(',').slice(0, 5).map((t: string, i: number) => <span key={i} className="px-1.5 py-0.5 bg-slate-700 rounded text-xs text-slate-300">{t.trim()}</span>)}</div>}
+                  {formData.tags && <div className="flex flex-wrap gap-1.5 mt-2">{(formData.tags as string).split(',').slice(0, 5).map((t: string, i: number) => <span key={i} className="px-2 py-1 bg-slate-700/50 border border-slate-600/50 rounded-md text-xs text-slate-300">{t.trim()}</span>)}</div>}
                   {(formData as any).galeria_urls && ((formData as any).galeria_urls as string).split('\n').filter(Boolean).length > 0 && (
                     <div className="mt-4">
                       <EditableGallery images={((formData as any).galeria_urls as string).split('\n').filter(Boolean)} onImagesChange={handleGalleryChange} title="Galería importada" />
@@ -196,27 +216,29 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
               )}
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {!modeloInicial && (
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">Categoría</label>
                   <div className="flex gap-2">
                     {(['sd', 'llm', 'video'] as CategoriaModelo[]).map(cat => (
-                      <button key={cat} type="button" onClick={() => cambiarCategoria(cat)} className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-all ${categoriaActiva === cat ? cat === 'sd' ? 'bg-blue-600/30 border-blue-500/50 text-blue-300' : cat === 'llm' ? 'bg-green-600/30 border-green-500/50 text-green-300' : 'bg-purple-600/30 border-purple-500/50 text-purple-300' : 'bg-slate-700/50 border-slate-600 text-slate-400 hover:text-white'}`}>{cat === 'sd' ? '🧠 SD' : cat === 'llm' ? '💬 LLM' : '🎬 Video'}</button>
+                      <button key={cat} type="button" onClick={() => cambiarCategoria(cat)} className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium border transition ${categoriaActiva === cat ? cat === 'sd' ? 'bg-blue-950/50 border-blue-700/50 text-blue-300 shadow-lg' : cat === 'llm' ? 'bg-green-950/50 border-green-700/50 text-green-300 shadow-lg' : 'bg-purple-950/50 border-purple-700/50 text-purple-300 shadow-lg' : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-white'}`}>{cat === 'sd' ? '🧠 SD' : cat === 'llm' ? '💬 LLM' : '🎬 Video'}</button>
                     ))}
                   </div>
                 </div>
               )}
+
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Nombre del Modelo <span className="text-red-400">*</span></label>
-                <input type="text" name="nombre" value={(formData.nombre as string) || ''} onChange={handleChange} placeholder="Nombre del modelo" className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" required />
+                <label className="block text-sm font-medium text-slate-300 mb-2">Nombre del Modelo <span className="text-red-400">*</span></label>
+                <input type="text" name="nombre" value={(formData.nombre as string) || ''} onChange={handleChange} placeholder="Nombre del modelo" className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" required />
               </div>
+
               {categoriaActiva === 'sd' && (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Tipo</label>
-                      <select name="tipo" value={(formData as any).tipo || 'checkpoint'} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Tipo</label>
+                      <select name="tipo" value={(formData as any).tipo || 'checkpoint'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
                         <option value="checkpoint">Checkpoint</option>
                         <option value="lora">LoRA</option>
                         <option value="vae">VAE</option>
@@ -226,38 +248,38 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Modelo Base</label>
-                      <input type="text" name="modelo_base" value={(formData as any).modelo_base || ''} onChange={handleChange} placeholder="SD 1.5, SDXL 1.0..." className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Modelo Base</label>
+                      <input type="text" name="modelo_base" value={(formData as any).modelo_base || ''} onChange={handleChange} placeholder="SD 1.5, SDXL 1.0..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Sampler</label>
-                      <input type="text" name="sampler" value={(formData as any).sampler || ''} onChange={handleChange} placeholder="DPM++ 2M Karras" className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Sampler</label>
+                      <input type="text" name="sampler" value={(formData as any).sampler || ''} onChange={handleChange} placeholder="DPM++ 2M Karras" className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Steps</label>
-                      <input type="number" name="steps" value={(formData as any).steps || ''} onChange={handleNumberChange} className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Steps</label>
+                      <input type="number" name="steps" value={(formData as any).steps || ''} onChange={handleNumberChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">CFG Scale</label>
-                      <input type="number" name="cfg_scale" value={(formData as any).cfg_scale || ''} onChange={handleNumberChange} step="0.5" className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">CFG Scale</label>
+                      <input type="number" name="cfg_scale" value={(formData as any).cfg_scale || ''} onChange={handleNumberChange} step="0.5" className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">URL Civitai</label>
-                      <input type="url" name="url_civitai" value={(formData as any).url_civitai || ''} onChange={handleChange} placeholder="https://civitai.com/models/..." className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">URL Civitai</label>
+                      <input type="url" name="url_civitai" value={(formData as any).url_civitai || ''} onChange={handleChange} placeholder="https://civitai.com/models/..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">URL HuggingFace</label>
-                      <input type="url" name="url_huggingface" value={(formData as any).url_huggingface || ''} onChange={handleChange} placeholder="https://huggingface.co/..." className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">URL HuggingFace</label>
+                      <input type="url" name="url_huggingface" value={(formData as any).url_huggingface || ''} onChange={handleChange} placeholder="https://huggingface.co/..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                   </div>
-                  <div className="space-y-3">
+                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 backdrop-blur-sm space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Galería de Imágenes (agregar URLs manualmente)</label>
-                      <textarea name="galeria_urls" value={(formData as any).galeria_urls || ''} onChange={handleChange} placeholder="URLs de imágenes separadas por salto de línea" rows={3} className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500 resize-y font-mono text-xs" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Galería de Imágenes (URLs)</label>
+                      <textarea name="galeria_urls" value={(formData as any).galeria_urls || ''} onChange={handleChange} placeholder="URLs de imágenes separadas por salto de línea" rows={3} className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition resize-y font-mono text-xs" />
                     </div>
                     {(formData as any).galeria_urls && (formData as any).galeria_urls.split('\n').filter(Boolean).length > 0 && (
                       <EditableGallery images={(formData as any).galeria_urls.split('\n').filter(Boolean)} onImagesChange={handleGalleryChange} title="Imágenes en la galería" />
@@ -265,12 +287,13 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                   </div>
                 </>
               )}
+
               {categoriaActiva === 'llm' && (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Tipo</label>
-                      <select name="tipo" value={(formData as any).tipo || 'chat'} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Tipo</label>
+                      <select name="tipo" value={(formData as any).tipo || 'chat'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
                         <option value="chat">Chat</option>
                         <option value="completion">Completion</option>
                         <option value="embedding">Embedding</option>
@@ -279,8 +302,8 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Framework</label>
-                      <select name="framework" value={(formData as any).framework || 'ollama'} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Framework</label>
+                      <select name="framework" value={(formData as any).framework || 'ollama'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
                         <option value="ollama">Ollama</option>
                         <option value="lm_studio">LM Studio</option>
                         <option value="llama_cpp">llama.cpp</option>
@@ -291,36 +314,37 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Creador</label>
-                      <input type="text" name="creador" value={(formData as any).creador || ''} onChange={handleChange} placeholder="Meta, Mistral AI..." className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Creador</label>
+                      <input type="text" name="creador" value={(formData as any).creador || ''} onChange={handleChange} placeholder="Meta, Mistral AI..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Parámetros</label>
-                      <input type="text" name="tamaño_parametros" value={(formData as any).tamaño_parametros || ''} onChange={handleChange} placeholder="7B, 70B..." className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Parámetros</label>
+                      <input type="text" name="tamaño_parametros" value={(formData as any).tamaño_parametros || ''} onChange={handleChange} placeholder="7B, 70B..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Cuantización</label>
-                      <input type="text" name="cuantizacion" value={(formData as any).cuantizacion || ''} onChange={handleChange} placeholder="Q4_K_M, FP16..." className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Cuantización</label>
+                      <input type="text" name="cuantizacion" value={(formData as any).cuantizacion || ''} onChange={handleChange} placeholder="Q4_K_M, FP16..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">URL HuggingFace</label>
-                      <input type="url" name="url_huggingface" value={(formData as any).url_huggingface || ''} onChange={handleChange} placeholder="https://huggingface.co/..." className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">URL HuggingFace</label>
+                      <input type="url" name="url_huggingface" value={(formData as any).url_huggingface || ''} onChange={handleChange} placeholder="https://huggingface.co/..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Comando Ollama</label>
-                      <input type="text" name="url_ollama" value={(formData as any).url_ollama || ''} onChange={handleChange} placeholder="llama3.1:70b" className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Comando Ollama</label>
+                      <input type="text" name="url_ollama" value={(formData as any).url_ollama || ''} onChange={handleChange} placeholder="llama3.1:70b" className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                   </div>
                 </>
               )}
+
               {categoriaActiva === 'video' && (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Tipo</label>
-                      <select name="tipo" value={(formData as any).tipo || 'text_to_video'} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Tipo</label>
+                      <select name="tipo" value={(formData as any).tipo || 'text_to_video'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
                         <option value="text_to_video">Text to Video</option>
                         <option value="image_to_video">Image to Video</option>
                         <option value="video_to_video">Video to Video</option>
@@ -328,8 +352,8 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Framework</label>
-                      <select name="framework" value={(formData as any).framework || 'stable_video_diffusion'} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Framework</label>
+                      <select name="framework" value={(formData as any).framework || 'stable_video_diffusion'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
                         <option value="stable_video_diffusion">Stable Video Diffusion</option>
                         <option value="animatediff">AnimateDiff</option>
                         <option value="deforum">Deforum</option>
@@ -339,51 +363,60 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">FPS</label>
-                      <input type="number" name="fps_recomendado" value={(formData as any).fps_recomendado || ''} onChange={handleNumberChange} className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">FPS</label>
+                      <input type="number" name="fps_recomendado" value={(formData as any).fps_recomendado || ''} onChange={handleNumberChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Frames</label>
-                      <input type="number" name="frames_totales" value={(formData as any).frames_totales || ''} onChange={handleNumberChange} className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Frames</label>
+                      <input type="number" name="frames_totales" value={(formData as any).frames_totales || ''} onChange={handleNumberChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Steps</label>
-                      <input type="number" name="steps" value={(formData as any).steps || ''} onChange={handleNumberChange} className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Steps</label>
+                      <input type="number" name="steps" value={(formData as any).steps || ''} onChange={handleNumberChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">CFG Scale</label>
-                      <input type="number" name="cfg_scale" value={(formData as any).cfg_scale || ''} onChange={handleNumberChange} step="0.5" className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none" />
+                      <label className="block text-sm font-medium text-slate-300 mb-2">CFG Scale</label>
+                      <input type="number" name="cfg_scale" value={(formData as any).cfg_scale || ''} onChange={handleNumberChange} step="0.5" className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1.5">URL de Descarga</label>
-                    <input type="url" name="url_descarga" value={(formData as any).url_descarga || ''} onChange={handleChange} placeholder="https://..." className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                    <label className="block text-sm font-medium text-slate-300 mb-2">URL de Descarga</label>
+                    <input type="url" name="url_descarga" value={(formData as any).url_descarga || ''} onChange={handleChange} placeholder="https://..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
                   </div>
                 </>
               )}
+
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Etiquetas / Tags</label>
-                <input type="text" name="tags" value={(formData.tags as string) || ''} onChange={handleChange} placeholder="separadas por comas" className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500" />
+                <label className="block text-sm font-medium text-slate-300 mb-2">Etiquetas / Tags</label>
+                <input type="text" name="tags" value={(formData.tags as string) || ''} onChange={handleChange} placeholder="separadas por comas" className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Notas</label>
-                <textarea name="notas" value={(formData.notas as string) || ''} onChange={handleChange} placeholder="Notas adicionales sobre el modelo..." rows={3} className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none placeholder:text-slate-500 resize-y" />
+                <label className="block text-sm font-medium text-slate-300 mb-2">Notas</label>
+                <textarea name="notas" value={(formData.notas as string) || ''} onChange={handleChange} placeholder="Notas adicionales sobre el modelo..." rows={3} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition resize-y" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Imagen Principal</label>
+
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 backdrop-blur-sm">
+                <label className="block text-sm font-medium text-slate-300 mb-3">Imagen Principal</label>
                 <div className="flex items-start gap-4">
-                  <div className="w-20 h-20 rounded-lg bg-slate-700 border border-slate-600 flex items-center justify-center overflow-hidden cursor-pointer hover:border-cyan-500 transition-colors" onClick={() => setSelectorAbierto(true)} style={{ objectPosition: (formData as any).posicion_imagen || 'center' }}>
+                  <div className="w-24 h-24 rounded-lg bg-slate-900/50 border border-slate-700/50 flex items-center justify-center overflow-hidden cursor-pointer hover:border-cyan-500/50 transition" onClick={() => setSelectorAbierto(true)} style={{ objectPosition: (formData as any).posicion_imagen || 'center' }}>
                     {archivoPreview ? (
                       <img src={archivoPreview} alt="Preview" className="w-full h-full object-cover" style={{ objectPosition: (formData as any).posicion_imagen || 'center' }} />
                     ) : (
-                      <span className="text-2xl text-slate-500">📷</span>
+                      <ImageIcon className="w-8 h-8 text-slate-500" />
                     )}
                   </div>
                   <div className="flex-1 space-y-2">
                     <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
                     <div className="flex gap-2">
-                      <button type="button" onClick={() => setSelectorAbierto(true)} className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-sm rounded-lg">🖼️ De la galería</button>
-                      <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 text-sm rounded-lg">📁 Subir archivo</button>
+                      <button type="button" onClick={() => setSelectorAbierto(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-sm font-medium transition shadow-lg">
+                        <ImageIcon className="w-4 h-4" />
+                        De la galería
+                      </button>
+                      <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-300 text-sm rounded-lg transition">
+                        <Upload className="w-4 h-4" />
+                        Subir archivo
+                      </button>
                     </div>
                     {archivo && <p className="text-xs text-slate-400">{archivo.name}</p>}
                     {(formData as any).posicion_imagen && archivoPreview && <p className="text-xs text-cyan-400">Posición: {(formData as any).posicion_imagen}</p>}
@@ -393,13 +426,18 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
             </form>
           )}
         </div>
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-700">
-          <button onClick={onClose} className="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium rounded-lg">Cancelar</button>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-800/50 bg-slate-900/90 backdrop-blur-xl">
+          <button onClick={onClose} className="px-4 py-2 bg-slate-800/50 hover:bg-slate-800 text-slate-300 font-medium rounded-lg transition">Cancelar</button>
           {tab === 'manual' && (
-            <button onClick={handleSubmit} disabled={enviando} className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 disabled:bg-cyan-800 disabled:opacity-50 text-white font-medium rounded-lg">{enviando ? '⏳ Guardando...' : modeloInicial ? '💾 Actualizar' : '✅ Guardar'}</button>
+            <button onClick={handleSubmit} disabled={enviando} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white text-sm font-medium transition shadow-lg">
+              {enviando ? '⏳ Guardando...' : modeloInicial ? '💾 Actualizar' : '✅ Guardar'}
+            </button>
           )}
         </div>
       </div>
+
       <ImageSelector isOpen={selectorAbierto} onClose={() => setSelectorAbierto(false)} images={((formData as any).galeria_urls || '').split('\n').filter(Boolean)} currentImage={archivoPreview || (formData as any).imagen_principal || ''} currentPosition={(formData as any).posicion_imagen || 'center'} onSelect={handleImageSelect} />
     </div>
   );

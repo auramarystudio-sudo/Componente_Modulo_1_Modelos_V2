@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 
 interface ImageSelectorProps {
   isOpen: boolean;
@@ -76,18 +77,20 @@ export default function ImageSelector({
 
   const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-5xl max-h-[90vh] bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
-          <h2 className="text-xl font-bold text-white">🖼️ Seleccionar Imagen Principal</h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300">✕</button>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-5xl max-h-[90vh] bg-slate-900 border border-slate-800/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl animate-fade-in">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 bg-slate-900/90 backdrop-blur-xl">
+          <h2 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">🖼️ Seleccionar Imagen Principal</h2>
+          <button onClick={onClose} className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white transition">
+            <X className="w-5 h-5" />
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-sm font-semibold text-cyan-400 uppercase tracking-wide mb-3">Galería ({images.length} imágenes)</h3>
+              <h3 className="text-sm font-semibold text-slate-300 mb-4">Galería ({images.length} imágenes)</h3>
               {images.length === 0 ? (
-                <div className="p-8 bg-slate-900/50 border border-slate-700 rounded-lg text-center">
+                <div className="p-8 bg-slate-800/50 border border-slate-700/50 rounded-xl text-center backdrop-blur-sm">
                   <p className="text-slate-400">No hay imágenes en la galería</p>
                 </div>
               ) : (
@@ -97,13 +100,13 @@ export default function ImageSelector({
                       key={index}
                       onClick={() => setSelectedImage(url)}
                       className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedImage === url ? 'border-cyan-500 scale-105' : 'border-slate-700 hover:border-slate-500'
+                        selectedImage === url ? 'border-cyan-500 scale-105 shadow-lg shadow-cyan-500/30' : 'border-slate-700/50 hover:border-slate-600/50'
                       }`}
                     >
                       <img src={url} alt={`Imagen ${index + 1}`} className="w-full h-full object-cover" />
                       {selectedImage === url && (
-                        <div className="absolute inset-0 bg-cyan-500/20 flex items-center justify-center">
-                          <span className="text-3xl">✓</span>
+                        <div className="absolute inset-0 bg-cyan-500/20 flex items-center justify-center backdrop-blur-sm">
+                          <span className="text-3xl text-white">✓</span>
                         </div>
                       )}
                     </button>
@@ -112,11 +115,11 @@ export default function ImageSelector({
               )}
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-cyan-400 uppercase tracking-wide mb-3">Preview y Posición</h3>
+              <h3 className="text-sm font-semibold text-slate-300 mb-4">Preview y Posición</h3>
               <div className="mb-4">
                 <p className="text-xs text-slate-400 mb-2">Así se verá en la tarjeta:</p>
-                <div className="w-full max-w-[280px] bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
-                  <div className="h-32 relative overflow-hidden bg-slate-800">
+                <div className="w-full max-w-[280px] bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden backdrop-blur-sm">
+                  <div className="h-32 relative overflow-hidden bg-slate-900/50">
                     {selectedImage ? (
                       <img src={selectedImage} alt="Preview" className="w-full h-full" style={getImageStyle(selectedPosition)} />
                     ) : (
@@ -126,15 +129,15 @@ export default function ImageSelector({
                 </div>
               </div>
               {selectedImage && (
-                <div>
-                  <p className="text-xs text-slate-400 mb-2">Ajusta la posición:</p>
+                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 backdrop-blur-sm">
+                  <p className="text-xs text-slate-400 mb-3">Ajusta la posición:</p>
                   <div className="grid grid-cols-2 gap-2">
                     {POSICIONES.map((pos) => (
                       <button
                         key={pos.value}
                         onClick={() => setSelectedPosition(pos.value)}
-                        className={`px-3 py-2 text-xs rounded-lg transition-colors ${
-                          selectedPosition === pos.value ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        className={`px-3 py-2 text-xs rounded-lg transition ${
+                          selectedPosition === pos.value ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg' : 'bg-slate-900/50 text-slate-300 hover:bg-slate-800/50 border border-slate-700/50'
                         }`}
                       >
                         {pos.label}
@@ -146,9 +149,11 @@ export default function ImageSelector({
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-700">
-          <button onClick={onClose} className="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium rounded-lg">Cancelar</button>
-          <button onClick={handleSelect} disabled={!selectedImage} className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-700 disabled:text-slate-500 text-white font-medium rounded-lg">✓ Seleccionar</button>
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-800/50 bg-slate-900/90 backdrop-blur-xl">
+          <button onClick={onClose} className="px-4 py-2 bg-slate-800/50 hover:bg-slate-800 text-slate-300 font-medium rounded-lg transition">Cancelar</button>
+          <button onClick={handleSelect} disabled={!selectedImage} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white text-sm font-medium transition shadow-lg">
+            ✓ Seleccionar
+          </button>
         </div>
       </div>
     </div>

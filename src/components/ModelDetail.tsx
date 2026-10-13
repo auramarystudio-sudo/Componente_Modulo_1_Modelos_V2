@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { X, Star, Edit, Trash2, ExternalLink, Copy } from 'lucide-react';
 import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo } from '../lib/demoData';
 import { openExternalUrl } from '../lib/urlUtils';
 import { getImageStyle } from './ImageSelector';
@@ -46,7 +47,7 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
 
   const renderSDConfig = (m: ModeloSD) => (
     <div className="space-y-4">
-      <h4 className="text-sm font-semibold text-cyan-400 uppercase tracking-wide">⚙️ Configuración Recomendada</h4>
+      <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">⚙️ Configuración Recomendada</h4>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <InfoCard label="Modelo Base" value={m.modelo_base} />
         <InfoCard label="VAE" value={m.modelo_vae || 'Por defecto'} />
@@ -66,7 +67,7 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
 
   const renderLLMConfig = (m: ModeloLLM) => (
     <div className="space-y-4">
-      <h4 className="text-sm font-semibold text-green-400 uppercase tracking-wide">⚙️ Parámetros del Modelo</h4>
+      <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">⚙️ Parámetros del Modelo</h4>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <InfoCard label="Framework" value={m.framework} />
         <InfoCard label="Parámetros" value={m.tamaño_parametros || 'N/A'} />
@@ -83,8 +84,8 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
       </div>
       {m.url_ollama && (
         <div className="mt-3">
-          <p className="text-xs text-slate-500 mb-1">Comando Ollama:</p>
-          <code className="block px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-green-400 text-sm font-mono">ollama run {m.url_ollama}</code>
+          <p className="text-xs text-slate-500 mb-2">Comando Ollama:</p>
+          <code className="block px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-green-400 text-sm font-mono backdrop-blur-sm">ollama run {m.url_ollama}</code>
         </div>
       )}
     </div>
@@ -92,7 +93,7 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
 
   const renderVideoConfig = (m: ModeloVideo) => (
     <div className="space-y-4">
-      <h4 className="text-sm font-semibold text-purple-400 uppercase tracking-wide">⚙️ Configuración de Video</h4>
+      <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">⚙️ Configuración de Video</h4>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <InfoCard label="Framework" value={m.framework} />
         <InfoCard label="Modelo Base" value={m.modelo_base || 'N/A'} />
@@ -109,55 +110,75 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-4xl max-h-[90vh] bg-slate-900 border border-slate-800/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl animate-fade-in">
+        {/* Header con imagen */}
         <div className="relative h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
           {modelo.imagen_principal ? (
             <img src={modelo.imagen_principal} alt={modelo.nombre} className="w-full h-full opacity-60" style={modelo.categoria === 'sd' ? getImageStyle((modelo as ModeloSD).posicion_imagen || 'center') : { objectFit: 'cover', objectPosition: 'center' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">{modelo.categoria === 'sd' ? '🧠' : modelo.categoria === 'llm' ? '💬' : '🎬'}</div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-800 via-slate-800/50 to-transparent" />
-          <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg bg-black/50 hover:bg-black/70 text-white">✕</button>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
+          
+          <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-lg bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 hover:bg-slate-800 text-white transition">
+            <X className="w-5 h-5" />
+          </button>
+
           <div className="absolute bottom-4 left-6 right-6">
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 bg-cyan-600/80 rounded text-xs text-white font-medium uppercase">{modelo.categoria}</span>
-              <span className="px-2 py-0.5 bg-slate-600/80 rounded text-xs text-white font-medium">{modelo.tipo}</span>
-              {modelo.estado && <span className={`px-2 py-0.5 rounded text-xs font-medium ${modelo.estado === 'activo' ? 'bg-green-600/80 text-white' : modelo.estado === 'archivado' ? 'bg-slate-600/80 text-slate-300' : 'bg-amber-600/80 text-white'}`}>{modelo.estado}</span>}
+              <span className={`px-2 py-1 rounded-md text-xs font-medium backdrop-blur-sm ${
+                modelo.categoria === 'sd' ? 'bg-blue-950/80 text-blue-300 border border-blue-800/30' :
+                modelo.categoria === 'llm' ? 'bg-green-950/80 text-green-300 border border-green-800/30' :
+                'bg-purple-950/80 text-purple-300 border border-purple-800/30'
+              }`}>{modelo.categoria.toUpperCase()}</span>
+              <span className="px-2 py-1 bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-md text-xs text-slate-200 font-medium">{modelo.tipo}</span>
+              {modelo.estado && (
+                <span className={`px-2 py-1 rounded-md text-xs font-medium backdrop-blur-sm ${
+                  modelo.estado === 'activo' ? 'bg-green-950/80 text-green-300 border border-green-800/30' :
+                  modelo.estado === 'archivado' ? 'bg-slate-900/80 text-slate-300 border border-slate-700/50' :
+                  'bg-amber-950/80 text-amber-300 border border-amber-800/30'
+                }`}>{modelo.estado}</span>
+              )}
             </div>
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-white">{modelo.nombre}</h2>
+              <h2 className="text-2xl font-bold text-slate-100">{modelo.nombre}</h2>
               {onToggleFavorite && (
                 <button
                   onClick={() => onToggleFavorite(modelo.id, modelo.categoria)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${modelo.favorito ? 'bg-amber-500 text-white' : 'bg-slate-700 text-slate-400 hover:text-amber-400'}`}
+                  className={`p-2 rounded-lg backdrop-blur-sm transition-all ${modelo.favorito ? 'bg-amber-500/80 text-white shadow-lg' : 'bg-slate-900/80 text-slate-400 hover:text-amber-400 border border-slate-700/50'}`}
                   title={modelo.favorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}
                 >
-                  {modelo.favorito ? '★' : '☆'}
+                  <Star className={`w-5 h-5 ${modelo.favorito ? 'fill-white' : ''}`} />
                 </button>
               )}
             </div>
           </div>
         </div>
+
+        {/* Control de posición */}
         {modelo.categoria === 'sd' && modelo.imagen_principal && onSetImagePosition && (
-          <div className="px-6 py-3 bg-slate-800/50 border-b border-slate-700">
+          <div className="px-6 py-3 bg-slate-800/50 border-b border-slate-700/50 backdrop-blur-sm">
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-sm text-slate-400">📐 Posición:</span>
+              <span className="text-sm font-medium text-slate-400">📐 Posición:</span>
               <div className="flex gap-1.5 flex-wrap">
                 {['stretch', 'top-landing', 'center-landing', 'mid-landing', 'bottom-landing', 'top-10', 'top-25', 'top-40', 'top-60', 'top-75', 'top-90', 'top', 'center', 'bottom', 'left', 'right', 'top left', 'top right', 'bottom left', 'bottom right'].map((pos) => (
-                  <button key={pos} onClick={() => onSetImagePosition(modelo.id, modelo.categoria, pos)} className={`px-2 py-1 text-xs rounded transition-colors ${(modelo as ModeloSD).posicion_imagen === pos ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>{pos}</button>
+                  <button key={pos} onClick={() => onSetImagePosition(modelo.id, modelo.categoria, pos)} className={`px-2 py-1 text-xs rounded-md transition ${(modelo as ModeloSD).posicion_imagen === pos ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg' : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50 border border-slate-700/50'}`}>{pos}</button>
                 ))}
               </div>
             </div>
           </div>
         )}
+
+        {/* Contenido */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Tags */}
           {modelo.tags && (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {modelo.tags.split(',').map((tag: string, i: number) => (
                 <button
                   key={i}
                   onClick={() => onTagClick?.(tag.trim())}
-                  className="px-2 py-1 bg-slate-700/50 hover:bg-cyan-600/30 border border-slate-600/50 hover:border-cyan-500/50 rounded-full text-xs text-slate-300 hover:text-cyan-300 transition-colors"
+                  className="px-3 py-1.5 bg-slate-800/50 hover:bg-cyan-950/50 border border-slate-700/50 hover:border-cyan-800/30 rounded-md text-xs text-slate-300 hover:text-cyan-300 transition font-medium"
                   title={`Filtrar por: ${tag.trim()}`}
                 >
                   #{tag.trim()}
@@ -165,80 +186,118 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
               ))}
             </div>
           )}
+
+          {/* Enlaces externos */}
           <div className="flex flex-wrap gap-2">
             {modelo.categoria === 'sd' && (modelo as ModeloSD).url_civitai && (
-              <button onClick={() => openExternalUrl((modelo as ModeloSD).url_civitai, 'Civitai')} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600/20 border border-blue-500/30 text-blue-300 rounded-lg text-sm hover:bg-blue-600/30">🔗 Civitai</button>
+              <button onClick={() => openExternalUrl((modelo as ModeloSD).url_civitai, 'Civitai')} className="flex items-center gap-2 px-4 py-2 bg-blue-950/50 hover:bg-blue-900/50 border border-blue-800/30 text-blue-300 rounded-lg text-sm font-medium transition">
+                <ExternalLink className="w-4 h-4" />
+                Civitai
+              </button>
             )}
             {(modelo.categoria === 'sd' && (modelo as ModeloSD).url_huggingface || modelo.categoria === 'llm' && (modelo as ModeloLLM).url_huggingface) && (
-              <button onClick={() => { const url = modelo.categoria === 'sd' ? (modelo as ModeloSD).url_huggingface : (modelo as ModeloLLM).url_huggingface; openExternalUrl(url, 'HuggingFace'); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-600/20 border border-yellow-500/30 text-yellow-300 rounded-lg text-sm hover:bg-yellow-600/30">🤗 HuggingFace</button>
+              <button onClick={() => { const url = modelo.categoria === 'sd' ? (modelo as ModeloSD).url_huggingface : (modelo as ModeloLLM).url_huggingface; openExternalUrl(url, 'HuggingFace'); }} className="flex items-center gap-2 px-4 py-2 bg-yellow-950/50 hover:bg-yellow-900/50 border border-yellow-800/30 text-yellow-300 rounded-lg text-sm font-medium transition">
+                <ExternalLink className="w-4 h-4" />
+                HuggingFace
+              </button>
             )}
             {modelo.categoria === 'llm' && (modelo as ModeloLLM).url_descarga && (
-              <button onClick={() => openExternalUrl((modelo as ModeloLLM).url_descarga, 'descarga')} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600/20 border border-green-500/30 text-green-300 rounded-lg text-sm hover:bg-green-600/30">📥 Descargar</button>
+              <button onClick={() => openExternalUrl((modelo as ModeloLLM).url_descarga, 'descarga')} className="flex items-center gap-2 px-4 py-2 bg-green-950/50 hover:bg-green-900/50 border border-green-800/30 text-green-300 rounded-lg text-sm font-medium transition">
+                <ExternalLink className="w-4 h-4" />
+                Descargar
+              </button>
             )}
           </div>
+
+          {/* Configuración */}
           {modelo.categoria === 'sd' && renderSDConfig(modelo as ModeloSD)}
           {modelo.categoria === 'llm' && renderLLMConfig(modelo as ModeloLLM)}
           {modelo.categoria === 'video' && renderVideoConfig(modelo as ModeloVideo)}
+
+          {/* Prompts */}
           {modelo.categoria === 'sd' && (modelo as ModeloSD).prompt_referencia && (
             <div>
-              <h4 className="text-sm font-semibold text-cyan-400 uppercase tracking-wide mb-2">📝 Prompt Principal</h4>
+              <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-3">📝 Prompt Principal</h4>
               <div className="relative">
-                <textarea readOnly value={(modelo as ModeloSD).prompt_referencia} rows={3} className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 text-sm font-mono resize-none" />
-                <button onClick={() => copiarAlPortapapeles((modelo as ModeloSD).prompt_referencia)} className="absolute top-2 right-2 px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs rounded">📋 Copiar</button>
+                <textarea readOnly value={(modelo as ModeloSD).prompt_referencia} rows={3} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm font-mono resize-none backdrop-blur-sm focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                <button onClick={() => copiarAlPortapapeles((modelo as ModeloSD).prompt_referencia)} className="absolute top-2 right-2 p-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-lg transition">
+                  <Copy className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}
+
           {modelo.categoria === 'sd' && (modelo as ModeloSD).prompt_negativo_default && (
             <div>
-              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wide mb-2">🚫 Prompt Negativo</h4>
+              <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-3">🚫 Prompt Negativo</h4>
               <div className="relative">
-                <textarea readOnly value={(modelo as ModeloSD).prompt_negativo_default} rows={2} className="w-full px-4 py-3 bg-slate-900 border border-red-900/30 rounded-lg text-red-200 text-sm font-mono resize-none" />
-                <button onClick={() => copiarAlPortapapeles((modelo as ModeloSD).prompt_negativo_default)} className="absolute top-2 right-2 px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs rounded">📋 Copiar</button>
+                <textarea readOnly value={(modelo as ModeloSD).prompt_negativo_default} rows={2} className="w-full px-4 py-3 bg-slate-800/50 border border-red-900/30 rounded-lg text-red-200 text-sm font-mono resize-none backdrop-blur-sm focus:outline-none focus:border-red-500/50 focus:ring-2 focus:ring-red-500/20 transition" />
+                <button onClick={() => copiarAlPortapapeles((modelo as ModeloSD).prompt_negativo_default)} className="absolute top-2 right-2 p-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-lg transition">
+                  <Copy className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}
+
           {modelo.categoria === 'llm' && (modelo as ModeloLLM).system_prompt_default && (
             <div>
-              <h4 className="text-sm font-semibold text-green-400 uppercase tracking-wide mb-2">🤖 System Prompt</h4>
+              <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-3">🤖 System Prompt</h4>
               <div className="relative">
-                <textarea readOnly value={(modelo as ModeloLLM).system_prompt_default} rows={3} className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 text-sm font-mono resize-none" />
-                <button onClick={() => copiarAlPortapapeles((modelo as ModeloLLM).system_prompt_default)} className="absolute top-2 right-2 px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs rounded">📋 Copiar</button>
+                <textarea readOnly value={(modelo as ModeloLLM).system_prompt_default} rows={3} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm font-mono resize-none backdrop-blur-sm focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                <button onClick={() => copiarAlPortapapeles((modelo as ModeloLLM).system_prompt_default)} className="absolute top-2 right-2 p-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-lg transition">
+                  <Copy className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}
+
+          {/* Galería */}
           {modelo.categoria === 'sd' && (modelo as ModeloSD).galeria_urls && (
             <div>
-              <h4 className="text-sm font-semibold text-cyan-400 uppercase tracking-wide mb-3">🖼️ Galería de Imágenes <span className="ml-2 text-xs text-slate-400 font-normal">({(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).length} imágenes)</span></h4>
+              <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-3">🖼️ Galería de Imágenes <span className="ml-2 text-xs text-slate-500 font-normal">({(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).length} imágenes)</span></h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).map((url: string, i: number) => (
                   <div key={i} className="group relative cursor-pointer" onClick={() => { setCarouselIndex(i); setCarouselOpen(true); }}>
-                    <div className="h-40 bg-slate-900 border border-slate-700 rounded-lg overflow-hidden hover:border-cyan-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/10">
+                    <div className="h-40 bg-slate-800/50 border border-slate-700/50 rounded-lg overflow-hidden hover:border-cyan-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/10 backdrop-blur-sm">
                       <img src={url.trim()} alt={`Galería ${i + 1}`} className="w-full h-full object-contain" loading="lazy" onError={(e) => { const parent = (e.target as HTMLImageElement).parentElement; if (parent) { parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-600 text-2xl">❌</div>'; } }} />
                     </div>
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-colors rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <div className="bg-white/20 backdrop-blur-sm rounded-full p-3"><span className="text-white text-2xl">🔍</span></div>
+                      <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
+                        <span className="text-white text-2xl">🔍</span>
+                      </div>
                     </div>
-                    <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-sm rounded text-xs text-white/90">{i + 1}</div>
+                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-md text-xs text-slate-200 font-medium">{i + 1}</div>
                   </div>
                 ))}
               </div>
             </div>
           )}
+
+          {/* Notas */}
           {modelo.notas && (
             <div>
-              <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">📌 Notas</h4>
-              <p className="text-sm text-slate-300 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">{modelo.notas}</p>
+              <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-3">📌 Notas</h4>
+              <p className="text-sm text-slate-300 bg-slate-800/50 p-4 rounded-lg border border-slate-700/50 backdrop-blur-sm">{modelo.notas}</p>
             </div>
           )}
         </div>
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-700 bg-slate-800/80">
-          <button onClick={handleDelete} className="px-4 py-2 bg-red-900/30 hover:bg-red-900/50 border border-red-800/30 text-red-300 text-sm font-medium rounded-lg">🗑️ Eliminar</button>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-800/50 bg-slate-900/90 backdrop-blur-xl">
+          <button onClick={handleDelete} className="flex items-center gap-2 px-4 py-2 bg-red-950/50 hover:bg-red-900/50 border border-red-800/30 text-red-300 text-sm font-medium rounded-lg transition">
+            <Trash2 className="w-4 h-4" />
+            Eliminar
+          </button>
           <div className="flex gap-2">
-            <button onClick={onClose} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm font-medium rounded-lg">Cerrar</button>
-            <button onClick={() => { onClose(); onEdit(modelo); }} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg">✏️ Editar</button>
+            <button onClick={onClose} className="px-4 py-2 bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm font-medium rounded-lg transition">Cerrar</button>
+            <button onClick={() => { onClose(); onEdit(modelo); }} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-sm font-medium rounded-lg transition shadow-lg">
+              <Edit className="w-4 h-4" />
+              Editar
+            </button>
           </div>
         </div>
       </div>
+
       {modelo.categoria === 'sd' && (modelo as ModeloSD).galeria_urls && (
         <ImageCarousel images={(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean)} initialIndex={carouselIndex} isOpen={carouselOpen} onClose={() => setCarouselOpen(false)} />
       )}
@@ -248,8 +307,8 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
 
 function InfoCard({ label, value, icon }: { label: string; value: string; icon?: string }) {
   return (
-    <div className="px-3 py-2 bg-slate-900/50 border border-slate-700/50 rounded-lg">
-      <p className="text-xs text-slate-500 mb-0.5">{icon} {label}</p>
+    <div className="px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg backdrop-blur-sm">
+      <p className="text-xs text-slate-500 mb-0.5 font-medium">{icon} {label}</p>
       <p className="text-sm text-slate-200 font-medium truncate" title={value}>{value}</p>
     </div>
   );
