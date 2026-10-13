@@ -8,6 +8,9 @@ interface ModelCardProps {
   onViewDetail: (modelo: Modelo) => void;
   onEdit: (modelo: Modelo) => void;
   onDelete: (id: string, categoria: string) => void;
+  onToggleFavorite?: (id: string, categoria: string) => void;
+  onDuplicate?: (modelo: Modelo) => void;
+  onTagClick?: (tag: string) => void;
 }
 
 const categoriaConfig = {
@@ -67,12 +70,13 @@ function renderModelInfo(modelo: Modelo) {
   return null;
 }
 
-export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete }: ModelCardProps) {
+export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete, onToggleFavorite, onDuplicate, onTagClick }: ModelCardProps) {
   const config = categoriaConfig[modelo.categoria];
   const badgeColor = tipoBadgeColors[modelo.tipo] || 'bg-slate-500/20 border-slate-500/40 text-slate-300';
   const descripcion = modelo.notas ? modelo.notas.substring(0, 80) + (modelo.notas.length > 80 ? '...' : '') : '';
   const urlCivitai = modelo.categoria === 'sd' ? (modelo as ModeloSD).url_civitai : '';
   const urlHuggingFace = modelo.categoria === 'sd' ? (modelo as ModeloSD).url_huggingface : modelo.categoria === 'llm' ? (modelo as ModeloLLM).url_huggingface : '';
+  const tags = modelo.tags ? modelo.tags.split(',').map(t => t.trim()).filter(Boolean).slice(0, 3) : [];
 
   const handleDelete = () => {
     if (window.confirm(`¿Eliminar "${modelo.nombre}"? Esta acción no se puede deshacer.`)) {
@@ -81,8 +85,9 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete }: Mo
   };
 
   return (
-    <div className={`bg-gradient-to-br ${config.bg} border ${config.border} rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg group flex flex-col cursor-pointer`} onClick={() => onViewDetail(modelo)}>
-      <div className="h-32 relative overflow-hidden flex items-center justify-center bg-slate-800/50">
+    <div className={`bg-gradient-to-br ${config.bg} border ${config.border} rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg group flex flex-col ${modelo.favorito ? 'ring-1 ring-amber-500/30' : ''}`}>
+      {/* Imagen / Placeholder */}
+      <div className="h-32 relative overflow-hidden flex items-center justify-center bg-slate-800/50 cursor-pointer" onClick={() => onViewDetail(modelo)}>
         {modelo.imagen_principal ? (
           <img src={modelo.imagen_principal} alt={modelo.nombre} className="w-full h-full" style={modelo.categoria === 'sd' ? getImageStyle((modelo as ModeloSD).posicion_imagen || 'center') : { objectFit: 'cover', objectPosition: 'center' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
         ) : modelo.categoria === 'sd' && (modelo as ModeloSD).galeria_urls ? (
@@ -95,26 +100,61 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete }: Mo
         {modelo.categoria === 'sd' && (modelo as ModeloSD).galeria_urls && (modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).length > 0 && (
           <span className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-sm rounded text-xs text-white/90 font-medium">🖼️ {(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).length}</span>
         )}
+        {/* Botón de favorito */}
+        {onToggleFavorite && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(modelo.id, modelo.categoria); }}
+            className={`absolute top-2 left-1/2 -translate-x-1/2 w-7 h-7 flex items-center justify-center rounded-full transition-all ${modelo.favorito ? 'bg-amber-500 text-white' : 'bg-black/50 text-slate-400 hover:text-amber-400'}`}
+            title={modelo.favorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+          >
+            {modelo.favorito ? '★' : '☆'}
+          </button>
+        )}
       </div>
+
+      {/* Contenido */}
       <div className="p-4 flex-1 flex flex-col">
-        <h3 className="text-sm font-bold text-white truncate" title={modelo.nombre}>{modelo.nombre}</h3>
+        <h3 className="text-sm font-bold text-white truncate cursor-pointer" title={modelo.nombre} onClick={() => onViewDetail(modelo)}>{modelo.nombre}</h3>
         {descripcion && <p className="text-xs text-slate-400 mt-1 line-clamp-2">{descripcion}</p>}
         {renderModelInfo(modelo)}
+        
+        {/* Tags clickeables */}
+        {tags.length > 0 && onTagClick && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {tags.map((tag, i) => (
+              <button
+                key={i}
+                onClick={(e) => { e.stopPropagation(); onTagClick(tag); }}
+                className="px-1.5 py-0.5 bg-slate-700/50 hover:bg-cyan-600/30 border border-slate-600/50 hover:border-cyan-500/50 rounded text-xs text-slate-400 hover:text-cyan-300 transition-colors"
+                title={`Filtrar por: ${tag}`}
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="mt-2 text-xs text-slate-500">
           {modelo.categoria === 'sd' && (modelo as ModeloSD).modelo_base && <span>Base: {(modelo as ModeloSD).modelo_base}</span>}
           {modelo.categoria === 'llm' && (modelo as ModeloLLM).creador && <span>Por: {(modelo as ModeloLLM).creador}</span>}
           {modelo.categoria === 'video' && (modelo as ModeloVideo).framework && <span>Framework: {(modelo as ModeloVideo).framework}</span>}
         </div>
+
         <div className="flex-1" />
-        <div className="flex gap-1.5 mt-3 pt-3 border-t border-slate-700/50">
+
+        {/* Botones de acción */}
+        <div className="flex gap-1 mt-3 pt-3 border-t border-slate-700/50">
           {urlCivitai && (
-            <button onClick={(e) => { e.stopPropagation(); openExternalUrl(urlCivitai, 'Civitai'); }} className="flex-1 px-2 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-700/30 text-blue-300 text-xs font-medium rounded-lg transition-colors text-center" title={`Abrir en Civitai: ${urlCivitai}`}>🔗 Civitai</button>
+            <button onClick={(e) => { e.stopPropagation(); openExternalUrl(urlCivitai, 'Civitai'); }} className="flex-1 px-1 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-700/30 text-blue-300 text-xs font-medium rounded-lg transition-colors text-center" title={`Abrir en Civitai: ${urlCivitai}`}>🔗</button>
           )}
           {urlHuggingFace && (
-            <button onClick={(e) => { e.stopPropagation(); openExternalUrl(urlHuggingFace, 'HuggingFace'); }} className="flex-1 px-2 py-1.5 bg-yellow-600/20 hover:bg-yellow-600/40 border border-yellow-700/30 text-yellow-300 text-xs font-medium rounded-lg transition-colors text-center" title={`Abrir en HuggingFace: ${urlHuggingFace}`}>🤗 HF</button>
+            <button onClick={(e) => { e.stopPropagation(); openExternalUrl(urlHuggingFace, 'HuggingFace'); }} className="flex-1 px-1 py-1.5 bg-yellow-600/20 hover:bg-yellow-600/40 border border-yellow-700/30 text-yellow-300 text-xs font-medium rounded-lg transition-colors text-center" title={`Abrir en HuggingFace: ${urlHuggingFace}`}>🤗</button>
           )}
-          <button onClick={(e) => { e.stopPropagation(); onEdit(modelo); }} className="px-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium rounded-lg transition-colors" title="Editar modelo">✏️</button>
-          <button onClick={(e) => { e.stopPropagation(); handleDelete(); }} className="px-2 py-1.5 bg-red-900/20 hover:bg-red-900/40 border border-red-800/30 text-red-400 text-xs font-medium rounded-lg transition-colors" title="Eliminar modelo">🗑️</button>
+          {onDuplicate && (
+            <button onClick={(e) => { e.stopPropagation(); onDuplicate(modelo); }} className="px-1.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium rounded-lg transition-colors" title="Duplicar modelo">📋</button>
+          )}
+          <button onClick={(e) => { e.stopPropagation(); onEdit(modelo); }} className="px-1.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium rounded-lg transition-colors" title="Editar modelo">✏️</button>
+          <button onClick={(e) => { e.stopPropagation(); handleDelete(); }} className="px-1.5 py-1.5 bg-red-900/20 hover:bg-red-900/40 border border-red-800/30 text-red-400 text-xs font-medium rounded-lg transition-colors" title="Eliminar modelo">🗑️</button>
         </div>
       </div>
     </div>

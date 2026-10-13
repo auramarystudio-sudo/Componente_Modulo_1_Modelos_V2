@@ -25,6 +25,7 @@ export interface ModeloSD {
   vram_rec: string;
   notas: string;
   estado: 'activo' | 'archivado' | 'pendiente';
+  favorito: boolean;
   created: string;
   updated: string;
 }
@@ -54,6 +55,7 @@ export interface ModeloLLM {
   imagen_principal: string;
   notas: string;
   estado: 'activo' | 'archivado' | 'pendiente';
+  favorito: boolean;
   created: string;
   updated: string;
 }
@@ -76,6 +78,7 @@ export interface ModeloVideo {
   imagen_principal: string;
   notas: string;
   estado: 'activo' | 'archivado' | 'pendiente';
+  favorito: boolean;
   created: string;
   updated: string;
 }
@@ -109,6 +112,7 @@ export const demoModelos: Modelo[] = [
     vram_rec: '8GB',
     notas: 'Excelente para fotografía realista. Funciona mejor con resolución 512x512 o 512x768.',
     estado: 'activo',
+    favorito: true,
     created: '2024-01-15 10:30:00',
     updated: '2024-01-15 10:30:00',
   },
@@ -136,6 +140,7 @@ export const demoModelos: Modelo[] = [
     vram_rec: '12GB',
     notas: 'Modelo SDXL premium. Requiere más VRAM pero produce resultados cinematográficos excepcionales.',
     estado: 'activo',
+    favorito: false,
     created: '2024-03-05 11:20:00',
     updated: '2024-03-05 11:20:00',
   },
@@ -164,6 +169,7 @@ export const demoModelos: Modelo[] = [
     imagen_principal: '',
     notas: 'Modelo de chat de Meta. Excelente para tareas generales, código y razonamiento.',
     estado: 'activo',
+    favorito: true,
     created: '2024-07-23 09:00:00',
     updated: '2024-07-23 09:00:00',
   },
@@ -185,6 +191,7 @@ export const demoModelos: Modelo[] = [
     imagen_principal: '',
     notas: 'Genera videos cortos a partir de una imagen. Motion bucket 127 para movimiento moderado.',
     estado: 'activo',
+    favorito: false,
     created: '2024-02-20 12:00:00',
     updated: '2024-02-20 12:00:00',
   },

@@ -10,6 +10,8 @@ interface ModelDetailProps {
   onEdit: (modelo: Modelo) => void;
   onDelete: (id: string, categoria: string) => void;
   onSetImagePosition?: (id: string, categoria: string, position: string) => void;
+  onToggleFavorite?: (id: string, categoria: string) => void;
+  onTagClick?: (tag: string) => void;
 }
 
 function copiarAlPortapapeles(texto: string) {
@@ -23,7 +25,7 @@ function copiarAlPortapapeles(texto: string) {
   });
 }
 
-export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetImagePosition }: ModelDetailProps) {
+export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetImagePosition, onToggleFavorite, onTagClick }: ModelDetailProps) {
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
 
@@ -122,7 +124,18 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
               <span className="px-2 py-0.5 bg-slate-600/80 rounded text-xs text-white font-medium">{modelo.tipo}</span>
               {modelo.estado && <span className={`px-2 py-0.5 rounded text-xs font-medium ${modelo.estado === 'activo' ? 'bg-green-600/80 text-white' : modelo.estado === 'archivado' ? 'bg-slate-600/80 text-slate-300' : 'bg-amber-600/80 text-white'}`}>{modelo.estado}</span>}
             </div>
-            <h2 className="text-2xl font-bold text-white">{modelo.nombre}</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-bold text-white">{modelo.nombre}</h2>
+              {onToggleFavorite && (
+                <button
+                  onClick={() => onToggleFavorite(modelo.id, modelo.categoria)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${modelo.favorito ? 'bg-amber-500 text-white' : 'bg-slate-700 text-slate-400 hover:text-amber-400'}`}
+                  title={modelo.favorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                >
+                  {modelo.favorito ? '★' : '☆'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
         {modelo.categoria === 'sd' && modelo.imagen_principal && onSetImagePosition && (
@@ -141,7 +154,14 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
           {modelo.tags && (
             <div className="flex flex-wrap gap-1.5">
               {modelo.tags.split(',').map((tag: string, i: number) => (
-                <span key={i} className="px-2 py-1 bg-slate-700/50 border border-slate-600/50 rounded-full text-xs text-slate-300">{tag.trim()}</span>
+                <button
+                  key={i}
+                  onClick={() => onTagClick?.(tag.trim())}
+                  className="px-2 py-1 bg-slate-700/50 hover:bg-cyan-600/30 border border-slate-600/50 hover:border-cyan-500/50 rounded-full text-xs text-slate-300 hover:text-cyan-300 transition-colors"
+                  title={`Filtrar por: ${tag.trim()}`}
+                >
+                  #{tag.trim()}
+                </button>
               ))}
             </div>
           )}
