@@ -62,7 +62,7 @@ const subtiposPorCategoria: Record<string, { value: string; label: string }[]> =
   ],
 };
 
-type VistaMode = 'grid' | 'list';
+type DensidadView = 'comfortable' | 'normal' | 'compact' | 'ultra' | 'list';
 
 export default function ModelosManager() {
   const [modelos, setModelos] = useState<Modelo[]>([]);
@@ -76,7 +76,10 @@ export default function ModelosManager() {
   const [modeloEditando, setModeloEditando] = useState<Modelo | null>(null);
   const [modeloDetalle, setModeloDetalle] = useState<Modelo | null>(null);
   const [statsAbierto, setStatsAbierto] = useState(false);
-  const [vistaMode, setVistaMode] = useState<VistaMode>('grid');
+  const [densidad, setDensidad] = useState<DensidadView>(() => {
+    const saved = localStorage.getItem('modelos-densidad');
+    return (saved as DensidadView) || 'normal';
+  });
   const [comparadorAbierto, setComparadorAbierto] = useState(false);
   const [busquedaImagenAbierta, setBusquedaImagenAbierta] = useState(false);
   const [modeloParaGenerar, setModeloParaGenerar] = useState<Modelo | null>(null);
@@ -293,6 +296,10 @@ export default function ModelosManager() {
       } else if (e.ctrlKey && e.key === 'f') {
         e.preventDefault();
         document.getElementById('search-input')?.focus();
+      } else if (e.ctrlKey && e.key >= '1' && e.key <= '5') {
+        e.preventDefault();
+        const niveles: DensidadView[] = ['comfortable', 'normal', 'compact', 'ultra', 'list'];
+        setDensidad(niveles[parseInt(e.key) - 1]);
       } else if (e.key === 'Escape') {
         setModalFormAbierto(false);
         setModeloDetalle(null);
@@ -306,6 +313,11 @@ export default function ModelosManager() {
   useEffect(() => {
     setFiltroSubtipo('');
   }, [tabActivo]);
+
+  // Persistir densidad en localStorage
+  useEffect(() => {
+    localStorage.setItem('modelos-densidad', densidad);
+  }, [densidad]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
@@ -371,12 +383,41 @@ export default function ModelosManager() {
               ))}
             </div>
 
-            {/* Toggle vista */}
+            {/* Selector de densidad */}
             <div className="flex items-center gap-1 bg-slate-800/50 border border-slate-700/50 rounded-lg p-1">
-              <button onClick={() => setVistaMode('grid')} className={`p-2 rounded-md transition ${vistaMode === 'grid' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`} title="Vista grid">
+              <button 
+                onClick={() => setDensidad('comfortable')} 
+                className={`px-3 py-2 rounded-md transition text-xs font-medium ${densidad === 'comfortable' ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}
+                title="Comfortable: 4 columnas, información completa (Ctrl+1)"
+              >
                 <Grid3X3 className="w-4 h-4" />
               </button>
-              <button onClick={() => setVistaMode('list')} className={`p-2 rounded-md transition ${vistaMode === 'list' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`} title="Vista lista">
+              <button 
+                onClick={() => setDensidad('normal')} 
+                className={`px-3 py-2 rounded-md transition text-xs font-medium ${densidad === 'normal' ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}
+                title="Normal: 5 columnas, información esencial (Ctrl+2)"
+              >
+                ◧
+              </button>
+              <button 
+                onClick={() => setDensidad('compact')} 
+                className={`px-3 py-2 rounded-md transition text-xs font-medium ${densidad === 'compact' ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}
+                title="Compact: 6 columnas, solo imagen y nombre (Ctrl+3)"
+              >
+                ▤
+              </button>
+              <button 
+                onClick={() => setDensidad('ultra')} 
+                className={`px-3 py-2 rounded-md transition text-xs font-medium ${densidad === 'ultra' ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}
+                title="Ultra Compact: 8 columnas, solo imagen (Ctrl+4)"
+              >
+                ▦
+              </button>
+              <button 
+                onClick={() => setDensidad('list')} 
+                className={`px-3 py-2 rounded-md transition text-xs font-medium ${densidad === 'list' ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}
+                title="Lista: formato tabla (Ctrl+5)"
+              >
                 <List className="w-4 h-4" />
               </button>
             </div>
@@ -425,13 +466,7 @@ export default function ModelosManager() {
             <h3 className="text-lg font-bold text-slate-300 mb-2">{busqueda || filtroSubtipo || filtroTags.length > 0 ? 'No se encontraron modelos' : 'No hay modelos registrados'}</h3>
             <p className="text-sm text-slate-500 max-w-md mx-auto">{busqueda || filtroSubtipo || filtroTags.length > 0 ? 'Prueba ajustando los filtros o el término de búsqueda.' : 'Añade tu primer modelo usando el botón "Nuevo" (Ctrl+N).'}</p>
           </div>
-        ) : vistaMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {modelosFiltrados.map((modelo) => (
-              <ModelCard key={modelo.id} modelo={modelo} onViewDetail={setModeloDetalle} onEdit={(m) => { setModeloEditando(m); setModalFormAbierto(true); }} onDelete={handleEliminar} onToggleFavorite={handleToggleFavorite} onDuplicate={handleDuplicate} onTagClick={handleTagClick} onTest={setModeloParaGenerar} />
-            ))}
-          </div>
-        ) : (
+        ) : densidad === 'list' ? (
           <div className="space-y-3">
             {modelosFiltrados.map((modelo) => (
               <div key={modelo.id} className="flex items-center gap-4 p-4 bg-slate-900/50 border border-slate-800/50 rounded-xl backdrop-blur-sm hover:border-slate-700/50 transition cursor-pointer shadow-lg" onClick={() => setModeloDetalle(modelo)}>
@@ -449,7 +484,7 @@ export default function ModelosManager() {
                   </div>
                   <p className="text-xs text-slate-400 truncate">{modelo.notas || 'Sin descripción'}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-xs px-2 py-0.5 rounded-md ${modelo.categoria === 'sd' ? 'bg-blue-950/50 text-blue-300 border border-blue-800/30' : modelo.categoria === 'llm' ? 'bg-green-950/50 text-green-300 border border-green-800/30' : 'bg-purple-950/50 text-purple-300 border border-purple-800/30'}`}>{modelo.categoria.toUpperCase()}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-md ${modelo.categoria === 'sd' ? 'bg-blue-950/50 text-blue-300 border border-blue-800/30' : modelo.categoria === 'llm' ? 'bg-green-950/50 text-green-300 border border-green-800/30' : modelo.categoria === 'video' ? 'bg-purple-950/50 text-purple-300 border border-purple-800/30' : modelo.categoria === 'audio' ? 'bg-pink-950/50 text-pink-300 border border-pink-800/30' : 'bg-amber-950/50 text-amber-300 border border-amber-800/30'}`}>{modelo.categoria.toUpperCase()}</span>
                     <span className="text-xs text-slate-500">{modelo.tipo}</span>
                   </div>
                 </div>
@@ -468,6 +503,28 @@ export default function ModelosManager() {
                   </button>
                 </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className={`grid gap-4 ${
+            densidad === 'comfortable' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' :
+            densidad === 'normal' ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' :
+            densidad === 'compact' ? 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6' :
+            'grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8'
+          }`}>
+            {modelosFiltrados.map((modelo) => (
+              <ModelCard 
+                key={modelo.id} 
+                modelo={modelo} 
+                densidad={densidad}
+                onViewDetail={setModeloDetalle} 
+                onEdit={(m) => { setModeloEditando(m); setModalFormAbierto(true); }} 
+                onDelete={handleEliminar} 
+                onToggleFavorite={handleToggleFavorite} 
+                onDuplicate={handleDuplicate} 
+                onTagClick={handleTagClick} 
+                onTest={setModeloParaGenerar} 
+              />
             ))}
           </div>
         )}

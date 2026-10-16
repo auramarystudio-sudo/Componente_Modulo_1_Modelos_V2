@@ -4,8 +4,11 @@ import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo, ModeloAudio, ModeloCompl
 import { openExternalUrl } from '../lib/urlUtils';
 import { getImageStyle } from './ImageSelector';
 
+type DensidadView = 'comfortable' | 'normal' | 'compact' | 'ultra';
+
 interface ModelCardProps {
   modelo: Modelo;
+  densidad?: DensidadView;
   onViewDetail: (modelo: Modelo) => void;
   onEdit: (modelo: Modelo) => void;
   onDelete: (id: string, categoria: string) => void;
@@ -111,7 +114,7 @@ function renderModelInfo(modelo: Modelo) {
   return null;
 }
 
-export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete, onToggleFavorite, onDuplicate, onTagClick, onTest }: ModelCardProps) {
+export default function ModelCard({ modelo, densidad = 'comfortable', onViewDetail, onEdit, onDelete, onToggleFavorite, onDuplicate, onTagClick, onTest }: ModelCardProps) {
   const config = categoriaConfig[modelo.categoria];
   const badgeColor = tipoBadgeColors[modelo.tipo] || 'bg-slate-950/50 text-slate-300 border-slate-800/30';
   const descripcion = modelo.notas ? modelo.notas.substring(0, 80) + (modelo.notas.length > 80 ? '...' : '') : '';
@@ -125,49 +128,63 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete, onTo
     }
   };
 
+  // Configurar alturas y estilos según densidad
+  const imageHeight = densidad === 'comfortable' ? 'h-40' : densidad === 'normal' ? 'h-32' : densidad === 'compact' ? 'h-28' : densidad === 'ultra' ? 'h-24' : 'h-40';
+  const showFullInfo = densidad === 'comfortable';
+  const showBasicInfo = densidad === 'comfortable' || densidad === 'normal';
+  const showActions = densidad !== 'ultra';
+  const isUltra = densidad === 'ultra';
+
   return (
     <div className={`bg-gradient-to-br ${config.gradient} bg-slate-900/50 border ${config.border} rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl group flex flex-col backdrop-blur-sm shadow-xl ${modelo.favorito ? 'ring-2 ring-amber-500/50' : ''}`}>
       {/* Imagen */}
-      <div className="h-40 relative overflow-hidden flex items-center justify-center bg-slate-800/50 cursor-pointer" onClick={() => onViewDetail(modelo)}>
+      <div className={`${imageHeight} relative overflow-hidden flex items-center justify-center bg-slate-800/50 cursor-pointer`} onClick={() => onViewDetail(modelo)}>
         {modelo.imagen_principal ? (
           <img src={modelo.imagen_principal} alt={modelo.nombre} className="w-full h-full" style={modelo.categoria === 'sd' ? getImageStyle((modelo as ModeloSD).posicion_imagen || 'center') : { objectFit: 'cover', objectPosition: 'center' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
         ) : modelo.categoria === 'sd' && (modelo as ModeloSD).galeria_urls ? (
           <img src={(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean)[0]?.trim() || ''} alt={modelo.nombre} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
         ) : (
-          <span className="text-5xl opacity-30 group-hover:opacity-50 transition-opacity">{config.icon}</span>
+          <span className={`${densidad === 'ultra' ? 'text-3xl' : 'text-5xl'} opacity-30 group-hover:opacity-50 transition-opacity`}>{config.icon}</span>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
         
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex items-center gap-2">
-          <span className="px-2 py-1 bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-md text-xs text-slate-200 font-medium">{config.label}</span>
-          <span className={`px-2 py-1 rounded-md text-xs font-medium border backdrop-blur-sm ${badgeColor}`}>{modelo.tipo}</span>
-        </div>
+        {/* Badges - solo en comfortable y normal */}
+        {showBasicInfo && (
+          <div className="absolute top-3 left-3 flex items-center gap-2">
+            <span className="px-2 py-1 bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-md text-xs text-slate-200 font-medium">{config.label}</span>
+            <span className={`px-2 py-1 rounded-md text-xs font-medium border backdrop-blur-sm ${badgeColor}`}>{modelo.tipo}</span>
+          </div>
+        )}
 
-        {modelo.categoria === 'sd' && (modelo as ModeloSD).galeria_urls && (modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).length > 0 && (
+        {/* Badge de galería - solo en comfortable */}
+        {showFullInfo && modelo.categoria === 'sd' && (modelo as ModeloSD).galeria_urls && (modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).length > 0 && (
           <span className="absolute bottom-3 right-3 px-2 py-1 bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-md text-xs text-slate-200 font-medium">🖼️ {(modelo as ModeloSD).galeria_urls.split('\n').filter(Boolean).length}</span>
         )}
 
-        {/* Favorito */}
+        {/* Favorito - siempre visible */}
         {onToggleFavorite && (
           <button
             onClick={(e) => { e.stopPropagation(); onToggleFavorite(modelo.id, modelo.categoria); }}
-            className={`absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg backdrop-blur-sm transition-all ${modelo.favorito ? 'bg-amber-500/80 text-white shadow-lg' : 'bg-slate-900/80 text-slate-400 hover:text-amber-400 border border-slate-700/50'}`}
+            className={`absolute ${showBasicInfo ? 'top-3' : 'top-2'} ${showBasicInfo ? 'right-3' : 'right-2'} ${densidad === 'ultra' ? 'w-6 h-6' : 'w-8 h-8'} flex items-center justify-center rounded-lg backdrop-blur-sm transition-all ${modelo.favorito ? 'bg-amber-500/80 text-white shadow-lg' : 'bg-slate-900/80 text-slate-400 hover:text-amber-400 border border-slate-700/50'}`}
             title={modelo.favorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}
           >
-            <Star className={`w-4 h-4 ${modelo.favorito ? 'fill-white' : ''}`} />
+            <Star className={`${densidad === 'ultra' ? 'w-3 h-3' : 'w-4 h-4'} ${modelo.favorito ? 'fill-white' : ''}`} />
           </button>
         )}
       </div>
 
       {/* Contenido */}
-      <div className="p-4 flex-1 flex flex-col">
-        <h3 className="text-sm font-bold text-slate-100 truncate cursor-pointer hover:text-cyan-400 transition" title={modelo.nombre} onClick={() => onViewDetail(modelo)}>{modelo.nombre}</h3>
-        {descripcion && <p className="text-xs text-slate-400 mt-2 line-clamp-2">{descripcion}</p>}
-        {renderModelInfo(modelo)}
+      <div className={`${densidad === 'ultra' ? 'p-2' : 'p-4'} flex-1 flex flex-col`}>
+        <h3 className={`${densidad === 'ultra' ? 'text-xs' : 'text-sm'} font-bold text-slate-100 truncate cursor-pointer hover:text-cyan-400 transition`} title={modelo.nombre} onClick={() => onViewDetail(modelo)}>{modelo.nombre}</h3>
         
-        {/* Tags clickeables */}
-        {tags.length > 0 && onTagClick && (
+        {/* Descripción - solo en comfortable */}
+        {showFullInfo && descripcion && <p className="text-xs text-slate-400 mt-2 line-clamp-2">{descripcion}</p>}
+        
+        {/* Info del modelo - solo en comfortable */}
+        {showFullInfo && renderModelInfo(modelo)}
+        
+        {/* Tags clickeables - solo en comfortable */}
+        {showFullInfo && tags.length > 0 && onTagClick && (
           <div className="flex flex-wrap gap-1.5 mt-3">
             {tags.map((tag, i) => (
               <button
@@ -182,45 +199,51 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete, onTo
           </div>
         )}
 
-        <div className="mt-3 text-xs text-slate-500">
-          {modelo.categoria === 'sd' && (modelo as ModeloSD).modelo_base && <span>Base: {(modelo as ModeloSD).modelo_base}</span>}
-          {modelo.categoria === 'llm' && (modelo as ModeloLLM).creador && <span>Por: {(modelo as ModeloLLM).creador}</span>}
-          {modelo.categoria === 'video' && (modelo as ModeloVideo).framework && <span>Framework: {(modelo as ModeloVideo).framework}</span>}
-        </div>
+        {/* Info base - solo en comfortable y normal */}
+        {showBasicInfo && (
+          <div className="mt-3 text-xs text-slate-500">
+            {modelo.categoria === 'sd' && (modelo as ModeloSD).modelo_base && <span>Base: {(modelo as ModeloSD).modelo_base}</span>}
+            {modelo.categoria === 'llm' && (modelo as ModeloLLM).creador && <span>Por: {(modelo as ModeloLLM).creador}</span>}
+            {modelo.categoria === 'video' && (modelo as ModeloVideo).framework && <span>Framework: {(modelo as ModeloVideo).framework}</span>}
+          </div>
+        )}
 
         <div className="flex-1" />
 
-        {/* Acciones */}
-        <div className="flex items-center gap-1.5 mt-4 pt-4 border-t border-slate-800/50">
-          {urlCivitai && (
-            <button onClick={(e) => { e.stopPropagation(); openExternalUrl(urlCivitai, 'Civitai'); }} className="flex-1 flex items-center justify-center gap-1 px-2 py-2 bg-blue-950/50 hover:bg-blue-900/50 border border-blue-800/30 text-blue-300 text-xs font-medium rounded-lg transition" title={`Abrir en Civitai`}>
-              <ExternalLink className="w-3 h-3" />
-              <span className="hidden sm:inline">Civitai</span>
+        {/* Acciones - solo si showActions es true */}
+        {showActions && (
+          <div className={`flex items-center gap-1.5 ${showFullInfo ? 'mt-4 pt-4' : 'mt-2 pt-2'} border-t border-slate-800/50`}>
+            {/* URLs externas - solo en comfortable */}
+            {showFullInfo && urlCivitai && (
+              <button onClick={(e) => { e.stopPropagation(); openExternalUrl(urlCivitai, 'Civitai'); }} className="flex-1 flex items-center justify-center gap-1 px-2 py-2 bg-blue-950/50 hover:bg-blue-900/50 border border-blue-800/30 text-blue-300 text-xs font-medium rounded-lg transition" title={`Abrir en Civitai`}>
+                <ExternalLink className="w-3 h-3" />
+                <span className="hidden sm:inline">Civitai</span>
+              </button>
+            )}
+            {showFullInfo && urlHuggingFace && (
+              <button onClick={(e) => { e.stopPropagation(); openExternalUrl(urlHuggingFace, 'HuggingFace'); }} className="flex-1 flex items-center justify-center gap-1 px-2 py-2 bg-yellow-950/50 hover:bg-yellow-900/50 border border-yellow-800/30 text-yellow-300 text-xs font-medium rounded-lg transition" title={`Abrir en HuggingFace`}>
+                <ExternalLink className="w-3 h-3" />
+                <span className="hidden sm:inline">HF</span>
+              </button>
+            )}
+            {onTest && (
+              <button onClick={(e) => { e.stopPropagation(); onTest(modelo); }} className="p-2 bg-green-950/50 hover:bg-green-900/50 border border-green-800/30 text-green-400 rounded-lg transition" title="Probar modelo">
+                <Zap className={`${isUltra ? 'w-3 h-3' : 'w-4 h-4'}`} />
+              </button>
+            )}
+            {onDuplicate && (
+              <button onClick={(e) => { e.stopPropagation(); onDuplicate(modelo); }} className="p-2 bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition" title="Duplicar">
+                <Copy className={`${isUltra ? 'w-3 h-3' : 'w-4 h-4'}`} />
+              </button>
+            )}
+            <button onClick={(e) => { e.stopPropagation(); onEdit(modelo); }} className="p-2 bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition" title="Editar">
+              <Edit className={`${isUltra ? 'w-3 h-3' : 'w-4 h-4'}`} />
             </button>
-          )}
-          {urlHuggingFace && (
-            <button onClick={(e) => { e.stopPropagation(); openExternalUrl(urlHuggingFace, 'HuggingFace'); }} className="flex-1 flex items-center justify-center gap-1 px-2 py-2 bg-yellow-950/50 hover:bg-yellow-900/50 border border-yellow-800/30 text-yellow-300 text-xs font-medium rounded-lg transition" title={`Abrir en HuggingFace`}>
-              <ExternalLink className="w-3 h-3" />
-              <span className="hidden sm:inline">HF</span>
+            <button onClick={(e) => { e.stopPropagation(); handleDelete(); }} className="p-2 bg-red-950/50 hover:bg-red-900/50 border border-red-800/30 text-red-400 rounded-lg transition" title="Eliminar">
+              <Trash2 className={`${isUltra ? 'w-3 h-3' : 'w-4 h-4'}`} />
             </button>
-          )}
-          {onTest && (
-            <button onClick={(e) => { e.stopPropagation(); onTest(modelo); }} className="p-2 bg-green-950/50 hover:bg-green-900/50 border border-green-800/30 text-green-400 rounded-lg transition" title="Probar modelo">
-              <Zap className="w-4 h-4" />
-            </button>
-          )}
-          {onDuplicate && (
-            <button onClick={(e) => { e.stopPropagation(); onDuplicate(modelo); }} className="p-2 bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition" title="Duplicar">
-              <Copy className="w-4 h-4" />
-            </button>
-          )}
-          <button onClick={(e) => { e.stopPropagation(); onEdit(modelo); }} className="p-2 bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition" title="Editar">
-            <Edit className="w-4 h-4" />
-          </button>
-          <button onClick={(e) => { e.stopPropagation(); handleDelete(); }} className="p-2 bg-red-950/50 hover:bg-red-900/50 border border-red-800/30 text-red-400 rounded-lg transition" title="Eliminar">
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
