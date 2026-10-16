@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, Star, Edit, Trash2, ExternalLink, Copy } from 'lucide-react';
-import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo } from '../lib/demoData';
+import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo, ModeloAudio, ModeloComplemento } from '../lib/demoData';
 import { openExternalUrl } from '../lib/urlUtils';
 import { getImageStyle } from './ImageSelector';
 import ImageCarousel from './ImageCarousel';
@@ -107,6 +107,66 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
     </div>
   );
 
+  const renderAudioConfig = (m: ModeloAudio) => (
+    <div className="space-y-4">
+      <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">🎵 Configuración de Audio</h4>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <InfoCard label="Framework" value={m.framework} />
+        <InfoCard label="Parámetros" value={m.tamaño_parametros || 'N/A'} />
+        <InfoCard label="Idiomas" value={m.idiomas || 'N/A'} />
+        <InfoCard label="Calidad" value={m.calidad_audio || 'N/A'} />
+        <InfoCard label="Latencia" value={m.latencia || 'N/A'} />
+        <InfoCard label="Modo" value={m.modo_ejecucion || 'N/A'} />
+        <InfoCard label="Tiempo Real" value={m.tiempo_real ? 'Sí' : 'No'} />
+        <InfoCard label="VRAM" value={m.vram_min || 'N/A'} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <InfoCard label="Entrada" value={m.formato_entrada || 'N/A'} />
+        <InfoCard label="Salida" value={m.formato_salida || 'N/A'} />
+      </div>
+      {m.caracteristicas && (
+        <div className="mt-3">
+          <p className="text-xs text-slate-500 mb-2">Características:</p>
+          <p className="text-sm text-slate-300 bg-slate-800/50 border border-slate-700/50 rounded-lg p-3">{m.caracteristicas}</p>
+        </div>
+      )}
+      {m.licencia && (
+        <div className="mt-3">
+          <p className="text-xs text-slate-500 mb-2">Licencia:</p>
+          <p className="text-sm text-slate-300 bg-slate-800/50 border border-slate-700/50 rounded-lg p-3">{m.licencia}</p>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderComplementoConfig = (m: ModeloComplemento) => (
+    <div className="space-y-4">
+      <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">🔌 Información del Complemento</h4>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <InfoCard label="Tipo" value={m.tipo} />
+        <InfoCard label="Subcategoría" value={m.subcategoria} />
+        <InfoCard label="Autor" value={m.autor || 'N/A'} />
+        <InfoCard label="Versión" value={m.version || 'N/A'} />
+        <InfoCard label="Nodos" value={m.nodos_incluidos > 0 ? String(m.nodos_incluidos) : 'N/A'} />
+        <InfoCard label="Compatibilidad" value={m.compatibilidad || 'N/A'} />
+        <InfoCard label="GPU" value={m.requiere_gpu || 'N/A'} />
+        <InfoCard label="VRAM" value={m.vram_requerida || 'N/A'} />
+      </div>
+      {m.funcionalidades && (
+        <div className="mt-3">
+          <p className="text-xs text-slate-500 mb-2">Funcionalidades:</p>
+          <p className="text-sm text-slate-300 bg-slate-800/50 border border-slate-700/50 rounded-lg p-3">{m.funcionalidades}</p>
+        </div>
+      )}
+      {m.descripcion && (
+        <div className="mt-3">
+          <p className="text-xs text-slate-500 mb-2">Descripción:</p>
+          <p className="text-sm text-slate-300 bg-slate-800/50 border border-slate-700/50 rounded-lg p-3">{m.descripcion}</p>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
@@ -116,7 +176,7 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
           {modelo.imagen_principal ? (
             <img src={modelo.imagen_principal} alt={modelo.nombre} className="w-full h-full opacity-60" style={modelo.categoria === 'sd' ? getImageStyle((modelo as ModeloSD).posicion_imagen || 'center') : { objectFit: 'cover', objectPosition: 'center' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">{modelo.categoria === 'sd' ? '🧠' : modelo.categoria === 'llm' ? '💬' : '🎬'}</div>
+            <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">{modelo.categoria === 'sd' ? '🖼️' : modelo.categoria === 'llm' ? '💬' : modelo.categoria === 'video' ? '🎬' : modelo.categoria === 'audio' ? '🎵' : '🔌'}</div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
           
@@ -213,6 +273,8 @@ export default function ModelDetail({ modelo, onClose, onEdit, onDelete, onSetIm
           {modelo.categoria === 'sd' && renderSDConfig(modelo as ModeloSD)}
           {modelo.categoria === 'llm' && renderLLMConfig(modelo as ModeloLLM)}
           {modelo.categoria === 'video' && renderVideoConfig(modelo as ModeloVideo)}
+          {modelo.categoria === 'audio' && renderAudioConfig(modelo as ModeloAudio)}
+          {modelo.categoria === 'complemento' && renderComplementoConfig(modelo as ModeloComplemento)}
 
           {/* Prompts */}
           {modelo.categoria === 'sd' && (modelo as ModeloSD).prompt_referencia && (

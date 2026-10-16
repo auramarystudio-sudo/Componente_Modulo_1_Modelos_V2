@@ -27,6 +27,8 @@ export const collections = {
   sd: pbClient.collection('modelos_sd'),
   llm: pbClient.collection('modelos_llm'),
   video: pbClient.collection('modelos_video'),
+  audio: pbClient.collection('modelos_audio'),
+  complemento: pbClient.collection('modelos_complemento'),
 };
 
 export default pbClient;

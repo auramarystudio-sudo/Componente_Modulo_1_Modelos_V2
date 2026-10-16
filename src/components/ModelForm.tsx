@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload, Image as ImageIcon, Sparkles } from 'lucide-react';
-import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo, CategoriaModelo } from '../lib/demoData';
+import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo, ModeloAudio, ModeloComplemento, CategoriaModelo } from '../lib/demoData';
 import { importarDesdeCivitai, esUrlCivitai } from '../lib/importers/civitai';
 import { importarDesdeHuggingFace, esUrlHuggingFace } from '../lib/importers/huggingface';
 import ImageSelector from './ImageSelector';
@@ -14,9 +14,11 @@ interface ModelFormProps {
 
 type TabForm = 'manual' | 'importar';
 
-const baseSD: Partial<ModeloSD> = { categoria: 'sd', nombre: '', tipo: 'checkpoint', modelo_base: 'SD 1.5', modelo_vae: '', upscaler: '', sampler: 'DPM++ 2M Karras', steps: 30, cfg_scale: 7, clip_skip: 1, tags: '', galeria_urls: '', url_civitai: '', url_huggingface: '', prompt_referencia: '', prompt_negativo_default: '', imagen_principal: '', posicion_imagen: 'center', vram_min: '', vram_rec: '', notas: '', estado: 'activo' };
+const baseSD: Partial<ModeloSD> = { categoria: 'sd', nombre: '', tipo: 'checkpoint', ecosistema: 'sd15', modelo_base: 'SD 1.5', modelo_vae: '', upscaler: '', sampler: 'DPM++ 2M Karras', steps: 30, cfg_scale: 7, clip_skip: 1, tags: '', galeria_urls: '', url_civitai: '', url_huggingface: '', prompt_referencia: '', prompt_negativo_default: '', imagen_principal: '', posicion_imagen: 'center', vram_min: '', vram_rec: '', notas: '', estado: 'activo' };
 const baseLLM: Partial<ModeloLLM> = { categoria: 'llm', nombre: '', tipo: 'chat', framework: 'ollama', creador: '', version: '', tamaño_parametros: '', cuantizacion: '', contexto_maximo: 4096, temperatura_default: 0.7, top_p: 0.9, top_k: 40, max_tokens: 2048, system_prompt_default: '', tags: '', url_descarga: '', url_huggingface: '', url_ollama: '', vram_min: '', vram_rec: '', imagen_principal: '', notas: '', estado: 'activo' };
 const baseVideo: Partial<ModeloVideo> = { categoria: 'video', nombre: '', tipo: 'text_to_video', framework: 'stable_video_diffusion', modelo_base: '', fps_recomendado: 8, frames_totales: 25, resolucion: '512x512', cfg_scale: 7, steps: 25, motion_bucket_id: 127, tags: '', url_descarga: '', imagen_principal: '', notas: '', estado: 'activo' };
+const baseAudio: Partial<ModeloAudio> = { categoria: 'audio', nombre: '', tipo: 'tts', framework: '', creador: '', tamaño_parametros: '', idiomas: '', calidad_audio: '', latencia: 'media', modo_ejecucion: 'local', tiempo_real: false, formato_entrada: 'texto', formato_salida: 'wav', caracteristicas: '', licencia: '', vram_min: '', url_descarga: '', url_github: '', url_demo: '', tags: '', notas: '', imagen_principal: '', estado: 'activo' };
+const baseComplemento: Partial<ModeloComplemento> = { categoria: 'complemento', nombre: '', tipo: 'utilidad', subcategoria: 'nodos', autor: '', version: '', nodos_incluidos: 0, compatibilidad: '', requiere_gpu: 'cualquiera', descripcion: '', funcionalidades: '', vram_requerida: '', url_github: '', url_documentacion: '', tags: '', notas: '', imagen_principal: '', estado: 'activo' };
 
 export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormProps) {
   const [tab, setTab] = useState<TabForm>(modeloInicial ? 'manual' : 'manual');
@@ -47,7 +49,9 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
     setCategoriaActiva(cat);
     if (cat === 'sd') setFormData({ ...baseSD });
     else if (cat === 'llm') setFormData({ ...baseLLM });
-    else setFormData({ ...baseVideo });
+    else if (cat === 'video') setFormData({ ...baseVideo });
+    else if (cat === 'audio') setFormData({ ...baseAudio });
+    else setFormData({ ...baseComplemento });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -221,8 +225,8 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">Categoría</label>
                   <div className="flex gap-2">
-                    {(['sd', 'llm', 'video'] as CategoriaModelo[]).map(cat => (
-                      <button key={cat} type="button" onClick={() => cambiarCategoria(cat)} className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium border transition ${categoriaActiva === cat ? cat === 'sd' ? 'bg-blue-950/50 border-blue-700/50 text-blue-300 shadow-lg' : cat === 'llm' ? 'bg-green-950/50 border-green-700/50 text-green-300 shadow-lg' : 'bg-purple-950/50 border-purple-700/50 text-purple-300 shadow-lg' : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-white'}`}>{cat === 'sd' ? '🧠 SD' : cat === 'llm' ? '💬 LLM' : '🎬 Video'}</button>
+                    {(['sd', 'llm', 'video', 'audio', 'complemento'] as CategoriaModelo[]).map(cat => (
+                      <button key={cat} type="button" onClick={() => cambiarCategoria(cat)} className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium border transition ${categoriaActiva === cat ? cat === 'sd' ? 'bg-blue-950/50 border-blue-700/50 text-blue-300 shadow-lg' : cat === 'llm' ? 'bg-green-950/50 border-green-700/50 text-green-300 shadow-lg' : cat === 'video' ? 'bg-purple-950/50 border-purple-700/50 text-purple-300 shadow-lg' : cat === 'audio' ? 'bg-pink-950/50 border-pink-700/50 text-pink-300 shadow-lg' : 'bg-amber-950/50 border-amber-700/50 text-amber-300 shadow-lg' : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-white'}`}>{cat === 'sd' ? '🖼️ SD' : cat === 'llm' ? '💬 LLM' : cat === 'video' ? '🎬 Video' : cat === 'audio' ? '🎵 Audio' : '🔌 Complemento'}</button>
                     ))}
                   </div>
                 </div>
@@ -235,7 +239,7 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
 
               {categoriaActiva === 'sd' && (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">Tipo</label>
                       <select name="tipo" value={(formData as any).tipo || 'checkpoint'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
@@ -245,6 +249,17 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                         <option value="upscaler">Upscaler</option>
                         <option value="controlnet">ControlNet</option>
                         <option value="embedding">Embedding</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Ecosistema</label>
+                      <select name="ecosistema" value={(formData as any).ecosistema || 'sd15'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
+                        <option value="sd15">SD 1.5</option>
+                        <option value="sdxl">SDXL</option>
+                        <option value="flux">Flux</option>
+                        <option value="pony">Pony</option>
+                        <option value="illustrious">Illustrious</option>
+                        <option value="other">Otro</option>
                       </select>
                     </div>
                     <div>
@@ -299,6 +314,9 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                         <option value="embedding">Embedding</option>
                         <option value="vision">Vision</option>
                         <option value="code">Code</option>
+                        <option value="reasoning">Razonamiento</option>
+                        <option value="multimodal">Multimodal</option>
+                        <option value="lightweight">Ligero</option>
                       </select>
                     </div>
                     <div>
@@ -357,6 +375,9 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                         <option value="stable_video_diffusion">Stable Video Diffusion</option>
                         <option value="animatediff">AnimateDiff</option>
                         <option value="deforum">Deforum</option>
+                        <option value="wan">Wan</option>
+                        <option value="ltx">LTX Video</option>
+                        <option value="cogvideox">CogVideoX</option>
                         <option value="other">Otro</option>
                       </select>
                     </div>
@@ -382,6 +403,163 @@ export default function ModelForm({ onClose, onSave, modeloInicial }: ModelFormP
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">URL de Descarga</label>
                     <input type="url" name="url_descarga" value={(formData as any).url_descarga || ''} onChange={handleChange} placeholder="https://..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                  </div>
+                </>
+              )}
+
+              {categoriaActiva === 'audio' && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Tipo</label>
+                      <select name="tipo" value={(formData as any).tipo || 'tts'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
+                        <option value="tts">Text-to-Speech</option>
+                        <option value="voice_cloning">Clonación de Voz</option>
+                        <option value="asr">Speech-to-Text</option>
+                        <option value="music_generation">Generación Musical</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Framework</label>
+                      <input type="text" name="framework" value={(formData as any).framework || ''} onChange={handleChange} placeholder="kokoro, whisper, audiocraft..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Creador</label>
+                      <input type="text" name="creador" value={(formData as any).creador || ''} onChange={handleChange} placeholder="Meta, OpenAI, Hexgrad..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Parámetros</label>
+                      <input type="text" name="tamaño_parametros" value={(formData as any).tamaño_parametros || ''} onChange={handleChange} placeholder="82M, 1.5B, 3.3B..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Idiomas</label>
+                      <input type="text" name="idiomas" value={(formData as any).idiomas || ''} onChange={handleChange} placeholder="en, es, fr..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Calidad Audio</label>
+                      <input type="text" name="calidad_audio" value={(formData as any).calidad_audio || ''} onChange={handleChange} placeholder="24kHz, 44kHz..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Latencia</label>
+                      <select name="latencia" value={(formData as any).latencia || 'media'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
+                        <option value="ultra-baja">Ultra-baja</option>
+                        <option value="baja">Baja</option>
+                        <option value="media">Media</option>
+                        <option value="alta">Alta</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Modo Ejecución</label>
+                      <select name="modo_ejecucion" value={(formData as any).modo_ejecucion || 'local'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
+                        <option value="local">Local</option>
+                        <option value="api">API</option>
+                        <option value="ambos">Ambos</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Formato Entrada</label>
+                      <input type="text" name="formato_entrada" value={(formData as any).formato_entrada || ''} onChange={handleChange} placeholder="texto, audio, midi..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Formato Salida</label>
+                      <input type="text" name="formato_salida" value={(formData as any).formato_salida || ''} onChange={handleChange} placeholder="wav, mp3, flac..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Características</label>
+                    <textarea name="caracteristicas" value={(formData as any).caracteristicas || ''} onChange={handleChange} placeholder="clonación, emociones, multilingüe..." rows={2} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition resize-y" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">URL GitHub</label>
+                      <input type="url" name="url_github" value={(formData as any).url_github || ''} onChange={handleChange} placeholder="https://github.com/..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Licencia</label>
+                      <input type="text" name="licencia" value={(formData as any).licencia || ''} onChange={handleChange} placeholder="MIT, Apache 2.0..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {categoriaActiva === 'complemento' && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Tipo</label>
+                      <select name="tipo" value={(formData as any).tipo || 'utilidad'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
+                        <option value="control">Control/Estructura</option>
+                        <option value="optimizacion">Optimización</option>
+                        <option value="movimiento">Movimiento</option>
+                        <option value="utilidad">Utilidad</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Subcategoría</label>
+                      <select name="subcategoria" value={(formData as any).subcategoria || 'nodos'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
+                        <option value="nodos">Nodos</option>
+                        <option value="wrapper">Wrapper</option>
+                        <option value="manager">Manager</option>
+                        <option value="suite">Suite</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Autor</label>
+                      <input type="text" name="autor" value={(formData as any).autor || ''} onChange={handleChange} placeholder="ltdrdata, cubiq, Nvidia..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Versión</label>
+                      <input type="text" name="version" value={(formData as any).version || ''} onChange={handleChange} placeholder="1.0, latest..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Nodos Incluidos</label>
+                      <input type="number" name="nodos_incluidos" value={(formData as any).nodos_incluidos || ''} onChange={handleNumberChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">GPU Requerida</label>
+                      <select name="requiere_gpu" value={(formData as any).requiere_gpu || 'cualquiera'} onChange={handleChange} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition">
+                        <option value="nvidia">Nvidia</option>
+                        <option value="amd">AMD</option>
+                        <option value="cpu">CPU</option>
+                        <option value="cualquiera">Cualquiera</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">VRAM Requerida</label>
+                      <input type="text" name="vram_requerida" value={(formData as any).vram_requerida || ''} onChange={handleChange} placeholder="4GB, 8GB, N/A..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Compatibilidad</label>
+                      <input type="text" name="compatibilidad" value={(formData as any).compatibilidad || ''} onChange={handleChange} placeholder="ComfyUI, SD1.5, SDXL..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Descripción</label>
+                    <textarea name="descripcion" value={(formData as any).descripcion || ''} onChange={handleChange} placeholder="Descripción del complemento..." rows={2} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition resize-y" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Funcionalidades</label>
+                    <textarea name="funcionalidades" value={(formData as any).funcionalidades || ''} onChange={handleChange} placeholder="super_resolution, denoise, frame_interpolation..." rows={2} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition resize-y" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">URL GitHub</label>
+                      <input type="url" name="url_github" value={(formData as any).url_github || ''} onChange={handleChange} placeholder="https://github.com/..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">URL Documentación</label>
+                      <input type="url" name="url_documentacion" value={(formData as any).url_documentacion || ''} onChange={handleChange} placeholder="https://..." className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition" />
+                    </div>
                   </div>
                 </>
               )}

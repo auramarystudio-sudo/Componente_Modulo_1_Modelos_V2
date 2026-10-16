@@ -14,9 +14,11 @@ import GenerationAPI from './GenerationAPI';
 const tabs: { key: CategoriaModelo | 'todos' | 'favoritos'; label: string; icon: React.ReactNode }[] = [
   { key: 'todos', label: 'Todos', icon: <Grid3X3 className="w-4 h-4" /> },
   { key: 'favoritos', label: 'Favoritos', icon: <Star className="w-4 h-4" /> },
-  { key: 'sd', label: 'SD', icon: <span>🧠</span> },
+  { key: 'sd', label: 'SD', icon: <span>🖼️</span> },
   { key: 'llm', label: 'LLM', icon: <span>💬</span> },
   { key: 'video', label: 'Video', icon: <span>🎬</span> },
+  { key: 'audio', label: 'Audio', icon: <span>🎵</span> },
+  { key: 'complemento', label: 'Complementos', icon: <span>🔌</span> },
 ];
 
 const subtiposPorCategoria: Record<string, { value: string; label: string }[]> = {
@@ -43,6 +45,20 @@ const subtiposPorCategoria: Record<string, { value: string; label: string }[]> =
     { value: 'image_to_video', label: 'Image to Video' },
     { value: 'video_to_video', label: 'Video to Video' },
     { value: 'animation', label: 'Animation' },
+  ],
+  audio: [
+    { value: '', label: 'Todos los subtipos' },
+    { value: 'tts', label: 'Text-to-Speech' },
+    { value: 'voice_cloning', label: 'Clonación de Voz' },
+    { value: 'asr', label: 'Speech-to-Text' },
+    { value: 'music_generation', label: 'Generación Musical' },
+  ],
+  complemento: [
+    { value: '', label: 'Todos los subtipos' },
+    { value: 'control', label: 'Control/Estructura' },
+    { value: 'optimizacion', label: 'Optimización' },
+    { value: 'movimiento', label: 'Movimiento' },
+    { value: 'utilidad', label: 'Utilidad' },
   ],
 };
 
@@ -71,15 +87,19 @@ export default function ModelosManager() {
       const conectado = await checkConnection();
       setConexionOk(conectado);
       if (conectado) {
-        const [sdList, llmList, videoList] = await Promise.all([
+        const [sdList, llmList, videoList, audioList, complementoList] = await Promise.all([
           collections.sd.getFullList({ sort: '-created' }).catch(() => []),
           collections.llm.getFullList({ sort: '-created' }).catch(() => []),
           collections.video.getFullList({ sort: '-created' }).catch(() => []),
+          collections.audio.getFullList({ sort: '-created' }).catch(() => []),
+          collections.complemento.getFullList({ sort: '-created' }).catch(() => []),
         ]);
         const todos: Modelo[] = [
           ...(sdList as unknown as Modelo[]).map(m => ({ ...m, categoria: 'sd' as const, favorito: false }) as Modelo),
           ...(llmList as unknown as Modelo[]).map(m => ({ ...m, categoria: 'llm' as const, favorito: false }) as Modelo),
           ...(videoList as unknown as Modelo[]).map(m => ({ ...m, categoria: 'video' as const, favorito: false }) as Modelo),
+          ...(audioList as unknown as Modelo[]).map(m => ({ ...m, categoria: 'audio' as const, favorito: false }) as Modelo),
+          ...(complementoList as unknown as Modelo[]).map(m => ({ ...m, categoria: 'complemento' as const, favorito: false }) as Modelo),
         ];
         setModelos(todos);
       } else {
@@ -121,6 +141,8 @@ export default function ModelosManager() {
     sd: modelos.filter(m => m.categoria === 'sd').length,
     llm: modelos.filter(m => m.categoria === 'llm').length,
     video: modelos.filter(m => m.categoria === 'video').length,
+    audio: modelos.filter(m => m.categoria === 'audio').length,
+    complemento: modelos.filter(m => m.categoria === 'complemento').length,
   };
 
   // Crear modelo
@@ -130,7 +152,7 @@ export default function ModelosManager() {
       const nuevoModelo: Modelo = { ...data, id: `${categoria}-${Date.now()}`, categoria, favorito: false, imagen_principal: file ? URL.createObjectURL(file) : (data.imagen_principal as string) || '', created: new Date().toISOString(), updated: new Date().toISOString() } as Modelo;
       setModelos(prev => [nuevoModelo, ...prev]);
     } else {
-      const collectionName = categoria === 'sd' ? 'modelos_sd' : categoria === 'llm' ? 'modelos_llm' : 'modelos_video';
+      const collectionName = categoria === 'sd' ? 'modelos_sd' : categoria === 'llm' ? 'modelos_llm' : categoria === 'video' ? 'modelos_video' : categoria === 'audio' ? 'modelos_audio' : 'modelos_complemento';
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '' && key !== 'categoria') formData.append(key, String(value));
@@ -150,7 +172,7 @@ export default function ModelosManager() {
     if (isDemoMode()) {
       setModelos(prev => prev.map((m: Modelo) => m.id === modeloEditando.id ? { ...m, ...data, imagen_principal: file ? URL.createObjectURL(file) : m.imagen_principal, updated: new Date().toISOString() } as Modelo : m));
     } else {
-      const collectionName = categoria === 'sd' ? 'modelos_sd' : categoria === 'llm' ? 'modelos_llm' : 'modelos_video';
+      const collectionName = categoria === 'sd' ? 'modelos_sd' : categoria === 'llm' ? 'modelos_llm' : categoria === 'video' ? 'modelos_video' : categoria === 'audio' ? 'modelos_audio' : 'modelos_complemento';
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '' && key !== 'categoria') formData.append(key, String(value));
@@ -166,7 +188,7 @@ export default function ModelosManager() {
   const handleEliminar = async (id: string, categoria: string) => {
     try {
       if (!isDemoMode()) {
-        const collectionName = categoria === 'sd' ? 'modelos_sd' : categoria === 'llm' ? 'modelos_llm' : 'modelos_video';
+        const collectionName = categoria === 'sd' ? 'modelos_sd' : categoria === 'llm' ? 'modelos_llm' : categoria === 'video' ? 'modelos_video' : categoria === 'audio' ? 'modelos_audio' : 'modelos_complemento';
         await pbClient.collection(collectionName).delete(id);
       }
       setModelos(prev => prev.filter(m => m.id !== id));
@@ -417,7 +439,7 @@ export default function ModelosManager() {
                   {modelo.imagen_principal ? (
                     <img src={modelo.imagen_principal} alt={modelo.nombre} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl opacity-30">{modelo.categoria === 'sd' ? '🧠' : modelo.categoria === 'llm' ? '💬' : '🎬'}</div>
+                    <div className="w-full h-full flex items-center justify-center text-2xl opacity-30">{modelo.categoria === 'sd' ? '🖼️' : modelo.categoria === 'llm' ? '💬' : modelo.categoria === 'video' ? '🎬' : modelo.categoria === 'audio' ? '🎵' : '🔌'}</div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Star, Copy, Edit, Trash2, ExternalLink, Zap } from 'lucide-react';
-import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo } from '../lib/demoData';
+import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo, ModeloAudio, ModeloComplemento } from '../lib/demoData';
 import { openExternalUrl } from '../lib/urlUtils';
 import { getImageStyle } from './ImageSelector';
 
@@ -16,26 +16,44 @@ interface ModelCardProps {
 }
 
 const categoriaConfig = {
-  sd: { gradient: 'from-blue-900/30 to-purple-900/30', border: 'border-blue-700/50 hover:border-blue-600/50', icon: '🧠', label: 'SD' },
+  sd: { gradient: 'from-blue-900/30 to-purple-900/30', border: 'border-blue-700/50 hover:border-blue-600/50', icon: '🖼️', label: 'SD' },
   llm: { gradient: 'from-green-900/30 to-teal-900/30', border: 'border-green-700/50 hover:border-green-600/50', icon: '💬', label: 'LLM' },
   video: { gradient: 'from-purple-900/30 to-pink-900/30', border: 'border-purple-700/50 hover:border-purple-600/50', icon: '🎬', label: 'Video' },
+  audio: { gradient: 'from-pink-900/30 to-rose-900/30', border: 'border-pink-700/50 hover:border-pink-600/50', icon: '🎵', label: 'Audio' },
+  complemento: { gradient: 'from-amber-900/30 to-orange-900/30', border: 'border-amber-700/50 hover:border-amber-600/50', icon: '🔌', label: 'Complemento' },
 };
 
 const tipoBadgeColors: Record<string, string> = {
+  // SD
   checkpoint: 'bg-blue-950/50 text-blue-300 border-blue-800/30',
   lora: 'bg-green-950/50 text-green-300 border-green-800/30',
   vae: 'bg-orange-950/50 text-orange-300 border-orange-800/30',
   upscaler: 'bg-pink-950/50 text-pink-300 border-pink-800/30',
   controlnet: 'bg-yellow-950/50 text-yellow-300 border-yellow-800/30',
   embedding: 'bg-indigo-950/50 text-indigo-300 border-indigo-800/30',
+  // LLM
   chat: 'bg-emerald-950/50 text-emerald-300 border-emerald-800/30',
   completion: 'bg-teal-950/50 text-teal-300 border-teal-800/30',
   code: 'bg-cyan-950/50 text-cyan-300 border-cyan-800/30',
   vision: 'bg-violet-950/50 text-violet-300 border-violet-800/30',
+  reasoning: 'bg-purple-950/50 text-purple-300 border-purple-800/30',
+  multimodal: 'bg-fuchsia-950/50 text-fuchsia-300 border-fuchsia-800/30',
+  lightweight: 'bg-lime-950/50 text-lime-300 border-lime-800/30',
+  // Video
   text_to_video: 'bg-purple-950/50 text-purple-300 border-purple-800/30',
   image_to_video: 'bg-fuchsia-950/50 text-fuchsia-300 border-fuchsia-800/30',
   video_to_video: 'bg-rose-950/50 text-rose-300 border-rose-800/30',
   animation: 'bg-amber-950/50 text-amber-300 border-amber-800/30',
+  // Audio
+  tts: 'bg-pink-950/50 text-pink-300 border-pink-800/30',
+  voice_cloning: 'bg-rose-950/50 text-rose-300 border-rose-800/30',
+  asr: 'bg-indigo-950/50 text-indigo-300 border-indigo-800/30',
+  music_generation: 'bg-violet-950/50 text-violet-300 border-violet-800/30',
+  // Complementos
+  control: 'bg-amber-950/50 text-amber-300 border-amber-800/30',
+  optimizacion: 'bg-orange-950/50 text-orange-300 border-orange-800/30',
+  movimiento: 'bg-yellow-950/50 text-yellow-300 border-yellow-800/30',
+  utilidad: 'bg-lime-950/50 text-lime-300 border-lime-800/30',
 };
 
 function renderModelInfo(modelo: Modelo) {
@@ -63,9 +81,30 @@ function renderModelInfo(modelo: Modelo) {
     const m = modelo as ModeloVideo;
     return (
       <div className="flex flex-wrap gap-1.5 mt-3">
+        {m.framework && <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-950/50 border border-purple-800/30 rounded-md text-xs text-purple-300 uppercase">{m.framework}</span>}
         {m.fps_recomendado > 0 && <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-950/50 border border-purple-800/30 rounded-md text-xs text-purple-300">{m.fps_recomendado} FPS</span>}
         {m.frames_totales > 0 && <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-950/50 border border-purple-800/30 rounded-md text-xs text-purple-300">{m.frames_totales} frames</span>}
         {m.resolucion && <span className="inline-flex items-center gap-1 px-2 py-1 bg-slate-800/50 border border-slate-700/50 rounded-md text-xs text-slate-300">{m.resolucion}</span>}
+      </div>
+    );
+  }
+  if (modelo.categoria === 'audio') {
+    const m = modelo as ModeloAudio;
+    return (
+      <div className="flex flex-wrap gap-1.5 mt-3">
+        {m.tamaño_parametros && <span className="inline-flex items-center gap-1 px-2 py-1 bg-pink-950/50 border border-pink-800/30 rounded-md text-xs text-pink-300">{m.tamaño_parametros}</span>}
+        {m.latencia && <span className="inline-flex items-center gap-1 px-2 py-1 bg-pink-950/50 border border-pink-800/30 rounded-md text-xs text-pink-300">{m.latencia}</span>}
+        {m.modo_ejecucion && <span className="inline-flex items-center gap-1 px-2 py-1 bg-slate-800/50 border border-slate-700/50 rounded-md text-xs text-slate-300">{m.modo_ejecucion}</span>}
+      </div>
+    );
+  }
+  if (modelo.categoria === 'complemento') {
+    const m = modelo as ModeloComplemento;
+    return (
+      <div className="flex flex-wrap gap-1.5 mt-3">
+        {m.nodos_incluidos > 0 && <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-950/50 border border-amber-800/30 rounded-md text-xs text-amber-300">{m.nodos_incluidos} nodos</span>}
+        {m.requiere_gpu && <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-950/50 border border-amber-800/30 rounded-md text-xs text-amber-300 uppercase">{m.requiere_gpu}</span>}
+        {m.subcategoria && <span className="inline-flex items-center gap-1 px-2 py-1 bg-slate-800/50 border border-slate-700/50 rounded-md text-xs text-slate-300">{m.subcategoria}</span>}
       </div>
     );
   }
