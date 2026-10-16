@@ -27,8 +27,6 @@ export interface ModeloSD {
   estado: 'activo' | 'archivado' | 'pendiente';
   favorito: boolean;
   version: string;
-  carpeta: string;
-  categoria_personalizada: string;
   created: string;
   updated: string;
 }
@@ -59,8 +57,6 @@ export interface ModeloLLM {
   notas: string;
   estado: 'activo' | 'archivado' | 'pendiente';
   favorito: boolean;
-  carpeta: string;
-  categoria_personalizada: string;
   created: string;
   updated: string;
 }
@@ -85,8 +81,6 @@ export interface ModeloVideo {
   estado: 'activo' | 'archivado' | 'pendiente';
   favorito: boolean;
   version: string;
-  carpeta: string;
-  categoria_personalizada: string;
   created: string;
   updated: string;
 }
@@ -122,8 +116,6 @@ export const demoModelos: Modelo[] = [
     estado: 'activo',
     favorito: true,
     version: '6.0',
-    carpeta: 'Fotografía',
-    categoria_personalizada: 'Realismo',
     created: '2024-01-15 10:30:00',
     updated: '2024-01-15 10:30:00',
   },
@@ -153,8 +145,6 @@ export const demoModelos: Modelo[] = [
     estado: 'activo',
     favorito: false,
     version: '9.0',
-    carpeta: 'Cinemático',
-    categoria_personalizada: 'Alta Calidad',
     created: '2024-03-05 11:20:00',
     updated: '2024-03-05 11:20:00',
   },
@@ -184,8 +174,6 @@ export const demoModelos: Modelo[] = [
     notas: 'Modelo de chat de Meta. Excelente para tareas generales, código y razonamiento.',
     estado: 'activo',
     favorito: true,
-    carpeta: 'Chat',
-    categoria_personalizada: 'General',
     created: '2024-07-23 09:00:00',
     updated: '2024-07-23 09:00:00',
   },
@@ -209,8 +197,6 @@ export const demoModelos: Modelo[] = [
     estado: 'activo',
     favorito: false,
     version: '1.1',
-    carpeta: 'Animación',
-    categoria_personalizada: 'Video Corto',
     created: '2024-02-20 12:00:00',
     updated: '2024-02-20 12:00:00',
   },
