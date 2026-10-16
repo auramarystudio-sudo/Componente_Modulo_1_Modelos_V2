@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Copy, Edit, Trash2, ExternalLink } from 'lucide-react';
+import { Star, Copy, Edit, Trash2, ExternalLink, Zap } from 'lucide-react';
 import type { Modelo, ModeloSD, ModeloLLM, ModeloVideo } from '../lib/demoData';
 import { openExternalUrl } from '../lib/urlUtils';
 import { getImageStyle } from './ImageSelector';
@@ -12,6 +12,7 @@ interface ModelCardProps {
   onToggleFavorite?: (id: string, categoria: string) => void;
   onDuplicate?: (modelo: Modelo) => void;
   onTagClick?: (tag: string) => void;
+  onTest?: (modelo: Modelo) => void;
 }
 
 const categoriaConfig = {
@@ -71,7 +72,7 @@ function renderModelInfo(modelo: Modelo) {
   return null;
 }
 
-export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete, onToggleFavorite, onDuplicate, onTagClick }: ModelCardProps) {
+export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete, onToggleFavorite, onDuplicate, onTagClick, onTest }: ModelCardProps) {
   const config = categoriaConfig[modelo.categoria];
   const badgeColor = tipoBadgeColors[modelo.tipo] || 'bg-slate-950/50 text-slate-300 border-slate-800/30';
   const descripcion = modelo.notas ? modelo.notas.substring(0, 80) + (modelo.notas.length > 80 ? '...' : '') : '';
@@ -162,6 +163,11 @@ export default function ModelCard({ modelo, onViewDetail, onEdit, onDelete, onTo
             <button onClick={(e) => { e.stopPropagation(); openExternalUrl(urlHuggingFace, 'HuggingFace'); }} className="flex-1 flex items-center justify-center gap-1 px-2 py-2 bg-yellow-950/50 hover:bg-yellow-900/50 border border-yellow-800/30 text-yellow-300 text-xs font-medium rounded-lg transition" title={`Abrir en HuggingFace`}>
               <ExternalLink className="w-3 h-3" />
               <span className="hidden sm:inline">HF</span>
+            </button>
+          )}
+          {onTest && (
+            <button onClick={(e) => { e.stopPropagation(); onTest(modelo); }} className="p-2 bg-green-950/50 hover:bg-green-900/50 border border-green-800/30 text-green-400 rounded-lg transition" title="Probar modelo">
+              <Zap className="w-4 h-4" />
             </button>
           )}
           {onDuplicate && (

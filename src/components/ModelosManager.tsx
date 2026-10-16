@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Sparkles, Plus, Download, Upload, BarChart3, Grid3X3, List, Search, Star, Copy, Trash2, Edit, ExternalLink, X } from 'lucide-react';
+import { Sparkles, Plus, Download, Upload, BarChart3, Grid3X3, List, Search, Star, Copy, Trash2, Edit, ExternalLink, X, GitCompare, Image as ImageIcon, Folder, Zap, LayoutDashboard } from 'lucide-react';
 import pbClient, { checkConnection, isDemoMode, collections } from '../lib/pocketbase';
 import { demoModelos } from '../lib/demoData';
 import type { Modelo, CategoriaModelo } from '../lib/demoData';
@@ -7,6 +7,11 @@ import ModelCard from './ModelCard';
 import ModelDetail from './ModelDetail';
 import ModelForm from './ModelForm';
 import StatsPanel from './StatsPanel';
+import ModelComparator from './ModelComparator';
+import ImageSimilaritySearch from './ImageSimilaritySearch';
+import FolderManager from './FolderManager';
+import GenerationAPI from './GenerationAPI';
+import Dashboard from './Dashboard';
 
 const tabs: { key: CategoriaModelo | 'todos' | 'favoritos'; label: string; icon: React.ReactNode }[] = [
   { key: 'todos', label: 'Todos', icon: <Grid3X3 className="w-4 h-4" /> },
@@ -58,6 +63,11 @@ export default function ModelosManager() {
   const [modeloDetalle, setModeloDetalle] = useState<Modelo | null>(null);
   const [statsAbierto, setStatsAbierto] = useState(false);
   const [vistaMode, setVistaMode] = useState<VistaMode>('grid');
+  const [comparadorAbierto, setComparadorAbierto] = useState(false);
+  const [busquedaImagenAbierta, setBusquedaImagenAbierta] = useState(false);
+  const [carpetasAbiertas, setCarpetasAbiertas] = useState(false);
+  const [modeloParaGenerar, setModeloParaGenerar] = useState<Modelo | null>(null);
+  const [dashboardAbierto, setDashboardAbierto] = useState(false);
 
   const cargarModelos = useCallback(async () => {
     setCargando(true);
@@ -216,6 +226,10 @@ export default function ModelosManager() {
     setModelos(prev => [nuevoModelo, ...prev]);
   };
 
+  const handleUpdateModel = (id: string, updates: Partial<Modelo>) => {
+    setModelos(prev => prev.map(m => m.id === id ? { ...m, ...updates } as Modelo : m));
+  };
+
   const handleTagClick = (tag: string) => {
     setFiltroTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
   };
@@ -297,6 +311,18 @@ export default function ModelosManager() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <button onClick={() => setDashboardAbierto(true)} className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white transition" title="Dashboard">
+                <LayoutDashboard className="w-4 h-4" />
+              </button>
+              <button onClick={() => setComparadorAbierto(true)} className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white transition" title="Comparar modelos">
+                <GitCompare className="w-4 h-4" />
+              </button>
+              <button onClick={() => setBusquedaImagenAbierta(true)} className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white transition" title="Buscar por imagen">
+                <ImageIcon className="w-4 h-4" />
+              </button>
+              <button onClick={() => setCarpetasAbiertas(true)} className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white transition" title="Carpetas">
+                <Folder className="w-4 h-4" />
+              </button>
               <button onClick={() => setStatsAbierto(true)} className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white transition" title="Estadísticas">
                 <BarChart3 className="w-4 h-4" />
               </button>
@@ -394,7 +420,7 @@ export default function ModelosManager() {
         ) : vistaMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {modelosFiltrados.map((modelo) => (
-              <ModelCard key={modelo.id} modelo={modelo} onViewDetail={setModeloDetalle} onEdit={(m) => { setModeloEditando(m); setModalFormAbierto(true); }} onDelete={handleEliminar} onToggleFavorite={handleToggleFavorite} onDuplicate={handleDuplicate} onTagClick={handleTagClick} />
+              <ModelCard key={modelo.id} modelo={modelo} onViewDetail={setModeloDetalle} onEdit={(m) => { setModeloEditando(m); setModalFormAbierto(true); }} onDelete={handleEliminar} onToggleFavorite={handleToggleFavorite} onDuplicate={handleDuplicate} onTagClick={handleTagClick} onTest={setModeloParaGenerar} />
             ))}
           </div>
         ) : (
@@ -444,6 +470,11 @@ export default function ModelosManager() {
       {modeloDetalle && <ModelDetail modelo={modeloDetalle} onClose={() => setModeloDetalle(null)} onEdit={(m) => { setModeloEditando(m); setModeloDetalle(null); setModalFormAbierto(true); }} onDelete={handleEliminar} onSetImagePosition={handleSetImagePosition} onToggleFavorite={handleToggleFavorite} onTagClick={handleTagClick} />}
       {modalFormAbierto && <ModelForm onClose={() => { setModalFormAbierto(false); setModeloEditando(null); }} onSave={modeloEditando ? handleEditar : handleCrear} modeloInicial={modeloEditando} />}
       <StatsPanel modelos={modelos} isOpen={statsAbierto} onClose={() => setStatsAbierto(false)} />
+      <ModelComparator modelos={modelos} isOpen={comparadorAbierto} onClose={() => setComparadorAbierto(false)} />
+      <ImageSimilaritySearch modelos={modelos} isOpen={busquedaImagenAbierta} onClose={() => setBusquedaImagenAbierta(false)} onSelectModel={setModeloDetalle} />
+      <FolderManager modelos={modelos} isOpen={carpetasAbiertas} onClose={() => setCarpetasAbiertas(false)} onUpdateModel={handleUpdateModel} />
+      {modeloParaGenerar && <GenerationAPI modelo={modeloParaGenerar} isOpen={true} onClose={() => setModeloParaGenerar(null)} />}
+      <Dashboard modelos={modelos} isOpen={dashboardAbierto} onClose={() => setDashboardAbierto(false)} />
     </div>
   );
 }
